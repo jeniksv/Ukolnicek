@@ -1,19 +1,16 @@
 using System.Diagnostics;
 
-namespace Assignment;
+namespace AppLogic;
 
 // TODO interface for test, so we can have more implementations of test like unittest based or program based
 // maybe Assignment should be more generic then test
-
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
 public class Test{
 	public string? Name;
-	private int maxPoints = 0;
-	// these should be private field;
-	// processor time in miliseconds
-	private int processorTime = 5000;
+	private int maxPoints;
+	private int processorTime;
 	private string? commandLineArguments;
 	private string? inputFileName;
 	private string? expectedOutputFileName;
@@ -21,7 +18,7 @@ public class Test{
 	public int Points => Result == TestResult.Correct ? maxPoints : 0;
 	public TestResult Result = TestResult.NotExecuted;
 	public string? TestOutput; // TODO ability to hide this field
-	public int ExitCode;	
+	public int ExitCode;
 
 	private ProcessStartInfo SetProcessStartInfo(string programName){
 		var startInfo = new ProcessStartInfo();
@@ -77,29 +74,27 @@ public class Test{
 			process.Start();	
 			
 			SetInput(process);
-			
+		
 			process.WaitForExit(processorTime);
 
 			if( !process.HasExited ){
-				Console.WriteLine("Time exceeded");
 				process.Kill();
 				process.WaitForExit();
 				Result = TestResult.TimeExceeded;
 			} else{
-				Console.WriteLine("Time condition passed");
-				if( CorrectOutput(process) ){
-					Result = TestResult.Correct;
-				} else Result = TestResult.OutputMismatch;
+				if( CorrectOutput(process) ) Result = TestResult.Correct;
+				else Result = TestResult.OutputMismatch;
 			}
 		}
-		catch( Exception ex){
+		catch( Exception ex ){
 			Console.WriteLine($"exception {ex}");	
 		}
 		finally{
-			Console.WriteLine($"exit code {process.ExitCode}");
-			Console.WriteLine($"err {process.StandardError.ReadToEnd()}");
+			ExitCode = process.ExitCode;
+			Console.WriteLine($"exit code {process.ExitCode}"); // debug logger
+			Console.WriteLine($"err {process.StandardError.ReadToEnd()}"); // debug logger
+			Console.WriteLine(); // debug logger should write smt like result of each test
 			process.Close();
-			//close two files
 		}
 	}
 	// TODO public string Interpreter;
@@ -110,27 +105,38 @@ public class Test{
 		public Builder(){
 			test = new Test();
 		}
-
-		public Builder WithProcessorTime(int time){ test.processorTime = time; return this; }
-		public Builder WithCommandLineArguments(string cmd){ test.commandLineArguments = cmd; return this; }
-		public Builder WithInputFileName(string file){ test.inputFileName = file; return this; }
+		
+		public Builder WithName(string name){ test.Name = name; return this; }
 		public Builder WithExpectedOutputFileName(string file){ test.expectedOutputFileName = file; return this; }
 		public Builder WithMaxPoints(int points){ test.maxPoints = points; return this; }
+		public Builder WithProcessorTime(int time){ test.processorTime = time; return this; }
+		public Builder WithInputFileName(string file){ test.inputFileName = file; return this; }
+		public Builder WithCommandLineArguments(string cmd){ test.commandLineArguments = cmd; return this; }
 
 		public Test Build() => test;
 	}
 }
 
 public class Assignment{
-	// serialize + deserialize
+	// TODO serialize + deserialize
 	public string Name;
 	public List<Test> tests;
 	public int PointsTotal;
 
 	public Assignment(string name){
+		// debug version
 		Name = name;
 		tests = new List<Test>();
-		// create directory in data with name Name
+
+		if( Directory.Exists($"Data/Assignments/{name}") ){
+			return; // debug version
+			throw new InvalidOperationException("assignment name already exists");
+		}
+
+		//Name = name;
+		//tests = new List<Test>();
+
+		Directory.CreateDirectory($"Data/Assignments/{name}");
 	}
 
 	public void RunTests(string programName){
@@ -142,14 +148,28 @@ public class Assignment{
 		}
 	}
 
-	public void AddTest(){ // parametrs should like files and arguments
-		// add files to directory ../ServerData/assignment.Name/
-	
-		// check for valid name
+	private bool ValidTestName(string name){
+		foreach(var test in tests){
+			if(test.Name == name) return false;
+		}
+
+		return true;
 	}
 
-	public void RemoveTest(){
-		// Test.name should be unique element
-	
+	public void AddTest(string testName, string eOFN, int mP = 1, int pT = 5000,
+			string? iFN = null, string? cLA = null){
+		if( !ValidTestName( testName) ) throw new InvalidOperationException("test name already exists");
+
+		// TODO copy these files to proper place
+		eOFN = $"Data/Assignments/{Name}/{eOFN}";
+		if( iFN != null ) iFN = $"Data/Assignments/{Name}/{iFN}";
+
+		var test = new Test.Builder().WithName(testName).WithExpectedOutputFileName(eOFN).WithMaxPoints(mP)
+			.WithProcessorTime(pT).WithInputFileName(iFN).WithCommandLineArguments(cLA).Build();
+
+		tests.Add(test);
+	}
+
+	public void RemoveTest(string testName){
 	}
 }
