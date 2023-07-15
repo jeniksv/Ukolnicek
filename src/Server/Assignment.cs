@@ -1,6 +1,10 @@
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text
 
 namespace AppLogic;
+
+// TODO TODO TODO make these data persistent!!!
 
 // TODO interface for test, so we can have more implementations of test like unittest based or program based
 // maybe Assignment should be more generic then test
@@ -8,16 +12,21 @@ namespace AppLogic;
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
 public class Test{
-	public string? Name;
-	private int maxPoints;
-	private int processorTime;
-	private string? commandLineArguments;
-	private string? inputFileName;
-	private string? expectedOutputFileName;
+	public string? Name { get; set; } // string formated: $"Data/Assignments/{A.Name}/{T.Name}"
+	public int maxPoints { get; set; }
+	public int processorTime { get; set; }
+	
+	private bool commandLineArguments => Directory.Exists($"{Name}/args}"); // name of file is always args
+	private bool inputFileName => Directory.Exists($"{Name}/in}"); // name of file is always in
+	private bool expectedOutputFileName => Directory.Exists($"{Name}/out}"); // name of file is always out
 
+	[JsonIgnore]
 	public int Points => Result == TestResult.Correct ? maxPoints : 0;
+	[JsonIgnore]
 	public TestResult Result = TestResult.NotExecuted;
+	[JsonIgnore]
 	public string? TestOutput; // TODO ability to hide this field
+	[JsonIgnore]
 	public int ExitCode;
 
 	private ProcessStartInfo SetProcessStartInfo(string programName){
@@ -28,15 +37,15 @@ public class Test{
 		startInfo.UseShellExecute = false;
 		startInfo.RedirectStandardError = true;
 		startInfo.RedirectStandardOutput = true;
-		if( inputFileName != null ) startInfo.RedirectStandardInput = true;
+		if( inputFileName ) startInfo.RedirectStandardInput = true;
 		
 		return startInfo;
 	}
 
 	private void SetInput(Process p){
-		if( !p.StartInfo.RedirectStandardInput || inputFileName == null ) return;
+		if( !p.StartInfo.RedirectStandardInput || !inputFileName ) return;
 
-		using(var reader = new StreamReader(inputFileName)){
+		using(var reader = new StreamReader($"{Name}/in")){
 			string? line = reader.ReadLine();
 			
 			while( line != null){
@@ -47,9 +56,9 @@ public class Test{
 	}
 
 	private bool CorrectOutput(Process p){
-		if( expectedOutputFileName == null ) return false;
+		if( !expectedOutputFileName ) return false;
 		
-		using(var reader = new StreamReader(expectedOutputFileName)){
+		using(var reader = new StreamReader($"{Name}/out")){
 			string? lineFile = reader.ReadLine();
 			string? lineOutput = p.StandardOutput.ReadLine();
 
@@ -106,68 +115,80 @@ public class Test{
 			test = new Test();
 		}
 		
+
+		// maybe builder should handle file copying?
 		public Builder WithName(string name){ test.Name = name; return this; }
-		public Builder WithExpectedOutputFileName(string file){ test.expectedOutputFileName = file; return this; }
+		public Builder WithExpectedOutputFileName(){ test.expectedOutputFileName = true; return this; }
 		public Builder WithMaxPoints(int points){ test.maxPoints = points; return this; }
 		public Builder WithProcessorTime(int time){ test.processorTime = time; return this; }
-		public Builder WithInputFileName(string file){ test.inputFileName = file; return this; }
-		public Builder WithCommandLineArguments(string cmd){ test.commandLineArguments = cmd; return this; }
+		public Builder WithInputFileName(){ test.inputFileName = true; return this; }
+		public Builder WithCommandLineArguments(){ test.commandLineArguments = true; return this; }
 
 		public Test Build() => test;
 	}
 }
 
 public class Assignment{
-	// TODO serialize + deserialize
-	public string Name;
-	public List<Test> tests;
-	public int PointsTotal;
+	// static field which should hold names of all
+	public static List<string> NameList;
 
-	public Assignment(string name){
-		// debug version
-		Name = name;
-		tests = new List<Test>();
-
-		if( Directory.Exists($"Data/Assignments/{name}") ){
-			return; // debug version
-			throw new InvalidOperationException("assignment name already exists");
-		}
-
-		//Name = name;
-		//tests = new List<Test>();
-
-		Directory.CreateDirectory($"Data/Assignments/{name}");
+	static Assignment(){
+		NameList = new List<string>(Directory.GetDirectories($"Data/Assignments"));
 	}
 
-	public void RunTests(string programName){
+	public static void Create(string name)
+	// maybe add string user ...? -> i get get it from programName
+	public void RunTests(string assignmentName, string programName){
 		PointsTotal = 0;
+		
+		// at first, i will build all tests
+		// deserialize all config files and then
 
 		foreach(var test in tests){
 			test.Run(programName);
 			PointsTotal += test.Points;
 		}
+
+		// it will be nice to create file with test logs etc.
 	}
 
-	private bool ValidTestName(string name){
-		foreach(var test in tests){
-			if(test.Name == name) return false;
+	private static bool AssignmentExists(string name){
+		foreach(var assignment in NameList){
+			if(assignment == name) return true;
 		}
 
-		return true;
+		return false;
 	}
 
-	public void AddTest(string testName, string eOFN, int mP = 1, int pT = 5000,
-			string? iFN = null, string? cLA = null){
-		if( !ValidTestName( testName) ) throw new InvalidOperationException("test name already exists");
+	private static bool ValidTestName(string testName) => Directory.Exists($"Data/Assignments/{testName}");
+
+	public void AddTest(string assignmentName, string testName, File outputFile, int points = 1, int time = 5000,
+			File? inputFile = null, File? argumentFile = null){
+		
+		if( !AssignmentExists(assignmentName) ){
+			throw new InvalidOperationException("assignment does not exist");
+		}
+
+		if( !ValidTestName($"{assignmentName}/{testName}") ){
+			throw new InvalidOperationException("test name already exists");
+		}
+		
+		Directory.CreateDirectory($"Data/Assignments/{assignmentName}/{testName}");
+
 
 		// TODO copy these files to proper place
-		eOFN = $"Data/Assignments/{Name}/{eOFN}";
-		if( iFN != null ) iFN = $"Data/Assignments/{Name}/{iFN}";
-
-		var test = new Test.Builder().WithName(testName).WithExpectedOutputFileName(eOFN).WithMaxPoints(mP)
+		/*
+		eOFN = $"Data/Assignments/{Name}/{testName}";
+		if( iFN != null ) iFN = $"Data/Assignments/{Name}/{testName}";
+		*/
+		// dont have to build test
+		// bacha na overhead vytvareni toho objektu
+		var test = new Test.Builder().WithName(testName).WithMaxPoints(mP)
 			.WithProcessorTime(pT).WithInputFileName(iFN).WithCommandLineArguments(cLA).Build();
 
-		tests.Add(test);
+		
+
+		// tests.Add(test);
 	}
 
 	public void RemoveTest(string testName){
