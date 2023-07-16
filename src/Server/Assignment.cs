@@ -131,61 +131,68 @@ public class Test{
 	}
 }
 
+// maybe assignment can hold only name and then all methods dont have to be static
+// but then assignment can hold something like log test etc ...
 public class Assignment{
-	// static field which should hold names of all
-	public static List<string> NameList;
+	public List<string> testNames;
+	public string Name;
+	public int PointsTotal = 0;
 
-	static Assignment(){
-		NameList = new List<string>(Directory.GetDirectories($"Data/Assignments"));
+	public Assignment(string name){
+		Name = GetFullAssignmentName(name);
+		
+		if( !Exists(Name) ) Directory.CreateDirectory($"{Name}");
+
+		testNames = new List<string>(Directory.GetDirectories(Name));
 	}
 
-	public static void Create(string name, FileInfo task){
-		if( AssignmentExists(name) ){
-			throw new InvalidOperationException("assignment already exists");
-		}
+	private static bool Exists(string name){
+		name = GetFullAssignmentName(name);
 
-		Directory.CreateDirectory($"Data/Assignments/{name}");
-
-		task.MoveTo($"Data/Assignments/{name}/README.md");
-
-		NameList.Add(name);
-	}
-
-	public static void RunTests(string assignmentName, string programName){
-		if( !assignmentName.StartsWith($"Data/Assignments/") ) assignmentName = $"Data/Assignments/{assignmentName}";
-
-		int PointsTotal = 0;
-		List<Test> tests = new List<Test>();
-
-		foreach(var testName in Directory.GetDirectories($"{assignmentName}")){
-			var config = File.ReadAllText($"{testName}/config.json");
-			var test = JsonSerializer.Deserialize<Test>(config);
-			tests.Add(test!);
-		}
-
-		foreach(var test in tests){
-			test.Run(programName);
-			PointsTotal += test.Points;
-		}
-
-		Console.WriteLine($"points: {PointsTotal}");
-
-		// it will be nice to create file with test logs etc.
-	}
-
-	private static bool AssignmentExists(string name){
-		if( !name.StartsWith($"Data/Assignments/") ) name = $"Data/Assignments/{name}";
-
-		foreach(var assignment in NameList){
+		foreach(var assignment in Directory.GetDirectories($"Data/Assignments/")){
 			if(assignment == name) return true;
 		}
 
 		return false;
 	}
 
-	private static bool ValidTestName(string testName) => !Directory.Exists($"Data/Assignments/{testName}");
+	private static string GetFullAssignmentName(string name) => !name.StartsWith($"Data/Assignments/") ? $"Data/Assignments/{name}" : name;
 
-	private static void MoveFiles(string directory, FileInfo outputFile, FileInfo? inputFile, FileInfo? argumentsFile){
+	public void AddTask(FileInfo task){
+		task.MoveTo($"{Name}/README.md");
+	}
+
+	public static void Delete(string name){
+		name = GetFullAssignmentName(name);
+
+		if( Exists(name) ) Directory.Delete(name, true);
+	}
+
+	private List<Test> DeserializeTests(){
+		List<Test> tests = new List<Test>();
+
+		foreach(var testName in Directory.GetDirectories($"{Name}")){
+			var config = File.ReadAllText($"{testName}/config.json");
+			var test = JsonSerializer.Deserialize<Test>(config);
+			tests.Add(test!);
+		}
+
+		return tests;
+	}
+
+	public void RunTests(string programName){
+		PointsTotal = 0;
+		List<Test> tests = DeserializeTests();
+
+		foreach(var test in tests){
+			test.Run(programName);
+			PointsTotal += test.Points;
+		}
+	}
+
+	private bool ValidTestName(string testName) => !Directory.Exists($"Data/Assignments/{testName}");
+
+	private void MoveFiles(string directory, FileInfo outputFile, FileInfo? inputFile, FileInfo? argumentsFile){
 		outputFile.MoveTo($"{directory}/out");
 
 		if( inputFile != null ) inputFile.MoveTo($"{directory}/in");
@@ -193,18 +200,12 @@ public class Assignment{
 		if( argumentsFile != null ) argumentsFile.MoveTo($"{directory}/args");
 	}
 
-	public static void AddTest(string assignmentName, string testName, FileInfo outputFile, int points = 1,
-			int time = 5000, FileInfo? inputFile = null, FileInfo? argumentsFile = null){
-		
-		if( !AssignmentExists(assignmentName) ){
-			throw new InvalidOperationException("assignment does not exist");
-		}
+	public void AddTest(string testName, FileInfo outputFile, int points, int time, FileInfo? inputFile, FileInfo? argumentsFile){
+		string testDirectory = $"{Name}/{testName}";
 
-		if( !ValidTestName($"{assignmentName}/{testName}") ){
+		if( !ValidTestName(testDirectory) ){
 			throw new InvalidOperationException("test name already exists");
 		}
-
-		string testDirectory = $"Data/Assignments/{assignmentName}/{testName}";
 		
 		Directory.CreateDirectory(testDirectory);
 
@@ -217,5 +218,6 @@ public class Assignment{
 	}
 
 	public void RemoveTest(string testName){
+		// TODO
 	}
 }
