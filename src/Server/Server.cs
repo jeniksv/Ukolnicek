@@ -1,5 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
+using Communication;
+
+namespace AppServer; 
 
 public class Server : IDisposable{
 	private readonly TcpListener server;
@@ -13,12 +16,13 @@ public class Server : IDisposable{
 		server.Start();
 	}
 
-	// maybe we can use async and awaits
+	// TODO use asyncs and awaits
 	public void MainLoop(){
 		while( true ){
 			var client = server.AcceptTcpClient();
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 
+			// TODO authentication here, because i want to pass specific user to
 			// var newUser = new TcpUser()
 
 			clientThread = new Thread(HandleClientiConnection);
@@ -26,8 +30,10 @@ public class Server : IDisposable{
 		}
 	}
 
+	private void Authenticate(){}
+
 	private static void HandleClientConnection(TcpClient client){
-		
+		// TODO user can sends notifications
 	}
 
 	public void Dispose(){
