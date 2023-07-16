@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
-using System.Text
+using System.Text.Json.Serialization;
 
 namespace AppLogic;
 
@@ -11,14 +11,17 @@ namespace AppLogic;
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
+public class TestLog{
+}
+
 public class Test{
 	public string? Name { get; set; } // string formated: $"Data/Assignments/{A.Name}/{T.Name}"
 	public int maxPoints { get; set; }
 	public int processorTime { get; set; }
 	
-	private bool commandLineArguments => Directory.Exists($"{Name}/args}"); // name of file is always args
-	private bool inputFileName => Directory.Exists($"{Name}/in}"); // name of file is always in
-	private bool expectedOutputFileName => Directory.Exists($"{Name}/out}"); // name of file is always out
+	private bool commandLineArguments => File.Exists($"{Name}/args"); // name of file is always args
+	private bool inputFileName => File.Exists($"{Name}/in"); // name of file is always in
+	private bool expectedOutputFileName => File.Exists($"{Name}/out"); // name of file is always out
 
 	[JsonIgnore]
 	public int Points => Result == TestResult.Correct ? maxPoints : 0;
@@ -118,11 +121,11 @@ public class Test{
 
 		// maybe builder should handle file copying?
 		public Builder WithName(string name){ test.Name = name; return this; }
-		public Builder WithExpectedOutputFileName(){ test.expectedOutputFileName = true; return this; }
+		//public Builder WithExpectedOutputFileName(){ test.expectedOutputFileName = true; return this; }
 		public Builder WithMaxPoints(int points){ test.maxPoints = points; return this; }
 		public Builder WithProcessorTime(int time){ test.processorTime = time; return this; }
-		public Builder WithInputFileName(){ test.inputFileName = true; return this; }
-		public Builder WithCommandLineArguments(){ test.commandLineArguments = true; return this; }
+		//public Builder WithInputFileName(){ test.inputFileName = true; return this; }
+		//public Builder WithCommandLineArguments(){ test.commandLineArguments = true; return this; }
 
 		public Test Build() => test;
 	}
@@ -136,23 +139,43 @@ public class Assignment{
 		NameList = new List<string>(Directory.GetDirectories($"Data/Assignments"));
 	}
 
-	public static void Create(string name)
-	// maybe add string user ...? -> i get get it from programName
-	public void RunTests(string assignmentName, string programName){
-		PointsTotal = 0;
-		
-		// at first, i will build all tests
-		// deserialize all config files and then
+	public static void Create(string name, FileInfo task){
+		if( AssignmentExists(name) ){
+			throw new InvalidOperationException("assignment already exists");
+		}
+
+		Directory.CreateDirectory($"Data/Assignments/{name}");
+
+		task.MoveTo($"Data/Assignments/{name}/README.md");
+
+		NameList.Add(name);
+	}
+
+	public static void RunTests(string assignmentName, string programName){
+		if( !assignmentName.StartsWith($"Data/Assignments/") ) assignmentName = $"Data/Assignments/{assignmentName}";
+
+		int PointsTotal = 0;
+		List<Test> tests = new List<Test>();
+
+		foreach(var testName in Directory.GetDirectories($"{assignmentName}")){
+			var config = File.ReadAllText($"{testName}/config.json");
+			var test = JsonSerializer.Deserialize<Test>(config);
+			tests.Add(test!);
+		}
 
 		foreach(var test in tests){
 			test.Run(programName);
 			PointsTotal += test.Points;
 		}
 
+		Console.WriteLine($"points: {PointsTotal}");
+
 		// it will be nice to create file with test logs etc.
 	}
 
 	private static bool AssignmentExists(string name){
+		if( !name.StartsWith($"Data/Assignments/") ) name = $"Data/Assignments/{name}";
+
 		foreach(var assignment in NameList){
 			if(assignment == name) return true;
 		}
@@ -160,10 +183,18 @@ public class Assignment{
 		return false;
 	}
 
-	private static bool ValidTestName(string testName) => Directory.Exists($"Data/Assignments/{testName}");
+	private static bool ValidTestName(string testName) => !Directory.Exists($"Data/Assignments/{testName}");
 
-	public void AddTest(string assignmentName, string testName, File outputFile, int points = 1, int time = 5000,
-			File? inputFile = null, File? argumentFile = null){
+	private static void MoveFiles(string directory, FileInfo outputFile, FileInfo? inputFile, FileInfo? argumentsFile){
+		outputFile.MoveTo($"{directory}/out");
+
+		if( inputFile != null ) inputFile.MoveTo($"{directory}/in");
+		
+		if( argumentsFile != null ) argumentsFile.MoveTo($"{directory}/args");
+	}
+
+	public static void AddTest(string assignmentName, string testName, FileInfo outputFile, int points = 1,
+			int time = 5000, FileInfo? inputFile = null, FileInfo? argumentsFile = null){
 		
 		if( !AssignmentExists(assignmentName) ){
 			throw new InvalidOperationException("assignment does not exist");
@@ -172,23 +203,17 @@ public class Assignment{
 		if( !ValidTestName($"{assignmentName}/{testName}") ){
 			throw new InvalidOperationException("test name already exists");
 		}
+
+		string testDirectory = $"Data/Assignments/{assignmentName}/{testName}";
 		
-		Directory.CreateDirectory($"Data/Assignments/{assignmentName}/{testName}");
+		Directory.CreateDirectory(testDirectory);
 
+		MoveFiles(testDirectory, outputFile, inputFile, argumentsFile);
 
-		// TODO copy these files to proper place
-		/*
-		eOFN = $"Data/Assignments/{Name}/{testName}";
-		if( iFN != null ) iFN = $"Data/Assignments/{Name}/{testName}";
-		*/
-		// dont have to build test
-		// bacha na overhead vytvareni toho objektu
-		var test = new Test.Builder().WithName(testName).WithMaxPoints(mP)
-			.WithProcessorTime(pT).WithInputFileName(iFN).WithCommandLineArguments(cLA).Build();
+		var test = new Test.Builder().WithName(testDirectory).WithMaxPoints(points).WithProcessorTime(time).Build();
 
-		
-
-		// tests.Add(test);
+		var config = JsonSerializer.Serialize<Test>(test);
+		File.WriteAllText($"{testDirectory}/config.json", config);
 	}
 
 	public void RemoveTest(string testName){
