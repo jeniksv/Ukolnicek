@@ -10,7 +10,20 @@ namespace AppLogic;
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
-public class TestLog{
+public readonly struct TestLog{
+	public readonly int ExitCode = 0;
+	public readonly TestResult Result = TestResult.NotExecuted;
+	public readonly string Stdout;
+	public readonly string Stderr;
+	public readonly int Points;
+
+	public TestLog(int exitCode, TestResult result, string stdout, string stderr, int points){
+		ExitCode = exitCode;
+		Result = result;
+		Stdout = stdout;
+		Stderr = stderr;
+		Points = points;
+	}
 }
 
 public class Test{
@@ -22,6 +35,7 @@ public class Test{
 	private bool inputFileName => File.Exists($"{Name}/in"); // name of file is always in
 	private bool expectedOutputFileName => File.Exists($"{Name}/out"); // name of file is always out
 
+	// these fields are not necessary, it is ok hold TestLog structure
 	[JsonIgnore]
 	public int Points => Result == TestResult.Correct ? maxPoints : 0;
 	[JsonIgnore]
@@ -30,6 +44,8 @@ public class Test{
 	public string? TestOutput; // TODO ability to hide this field
 	[JsonIgnore]
 	public int ExitCode;
+	[JsonIgnore]
+	public TestLog? Log;
 
 	private ProcessStartInfo SetProcessStartInfo(string programName){
 		var startInfo = new ProcessStartInfo();
@@ -76,10 +92,11 @@ public class Test{
 	}
 	
 	// TODO security -> test should run in virtual env
-	public void Run(string programName){
+	// TODO return value TestLog
+	public TestLog Run(string programName){
 		var process = new Process(){ StartInfo = SetProcessStartInfo(programName) };
 
-		Result = TestResult.Correct;
+		var result = TestResult.Correct;
 
 		try{
 			process.Start();	
@@ -101,12 +118,16 @@ public class Test{
 			Console.WriteLine($"exception {ex}");	
 		}
 		finally{
-			ExitCode = process.ExitCode;
-			Console.WriteLine($"exit code {process.ExitCode}"); // debug logger
-			Console.WriteLine($"err {process.StandardError.ReadToEnd()}"); // debug logger
-			Console.WriteLine(); // debug logger should write smt like result of each test
+			int exitCode = process.ExitCode;
+			string stdout = process.StandardOutput.ReadToEnd();
+			string stderr = process.StandardError.ReadToEnd();
+			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
+			// int exitCode, TestResult result, string stdout, string stderr, int points)
+			Log = new TestLog(exitCode, result, stdout, stderr, points);
 		}
+
+		return (TestLog)Log;
 	}
 	// TODO public string Interpreter;
 	
@@ -136,6 +157,8 @@ public class Assignment{
 	public List<string> testNames;
 	public string Name;
 	public int PointsTotal = 0;
+
+	public List<TestLog> Result;
 
 	public Assignment(string name){
 		Name = GetFullAssignmentName(name);
@@ -179,14 +202,17 @@ public class Assignment{
 		return tests;
 	}
 
-	public void RunTests(string programName){
+	public List<TestLog> RunTests(string programName){
 		PointsTotal = 0;
-		List<Test> tests = DeserializeTests();
+		var tests = DeserializeTests();
+		var result = new List<TestLog>();
 
 		foreach(var test in tests){
 			test.Run(programName);
 			PointsTotal += test.Points;
 		}
+
+		return result;
 	}
 
 	private bool ValidTestName(string testName) => !Directory.Exists($"Data/Assignments/{testName}");

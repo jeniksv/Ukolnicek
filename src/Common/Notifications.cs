@@ -4,17 +4,25 @@ namespace Communication;
 
 public enum NotifEnum{
 	/*
-	TestsResult,
-	RunTests,
-	AddTest,
-	*/
+	 * -> User student
+	 * EvalSolution
+	 * ShowMyAssignments ?
+	 * -> User admin
+	 * CreateAssignment
+	 * AddTest
+	 * DeleteTest
+	 * GetTestInfo (s tim bude prcani ale)
+	 * CreateGroup (s tim bude prcani tez)
+	 * AssignTaskToStudent
+	 * JesteNeco
+	 */
 }
 
 public struct Notification<T>{
 	public NotifEnum Type { get; }
-	public T? Data
+	public T? Data;
 	
-	public Notification(NotifEnum type, T? data = null){
+	public Notification(NotifEnum type, T? data){
 		Type = type;
 		Data = data;
 	}
