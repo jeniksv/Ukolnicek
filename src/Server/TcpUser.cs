@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using Communication;
 
+// TODO tohle dava smysl do budoucna
 class TcpUser : IDisposable{
         private readonly IObjectTransfer transfer;
 
@@ -14,7 +15,7 @@ class TcpUser : IDisposable{
                 return transfer.Receive<T>();
         }
 
-        public void Notify<T>(T notification){ // TODO wrap object for notification
+        public void Notify<T>(T notification){
                 transfer.Send(notification);
         }
 

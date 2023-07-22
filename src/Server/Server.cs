@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Communication;
+using Testing;
 
 namespace AppServer; 
 
@@ -18,7 +19,21 @@ public class Server : IDisposable{
 		server.Start();
 	}
 
-	// TODO use asyncs and awaits
+	private void FirstSetUp(){
+		// TODO ask for path for data => timhle si zas vykopes hrob
+		if( !Directory.Exists("Data") ){
+			Directory.CreateDirectory("Data");
+			Directory.CreateDirectory("Data/Assignments");
+			Directory.CreateDirectory("Data/Users");
+			Console.WriteLine("Enter user name");
+			var name = Console.ReadLine();
+			Directory.CreateDirectory($"Data/Users/{name}");
+			Console.WriteLine("Enter your password"); // TODO dont display this line
+			var passwd = Console.ReadLine();
+			File.WriteAllText($"Data/Users/{name}/passwd", passwd);
+		}
+	}
+
 	public async Task MainLoop(){
 		while( true ){
 			var client = await server.AcceptTcpClientAsync();
@@ -28,7 +43,6 @@ public class Server : IDisposable{
 
 			// var newClient = new TcpUser(client);
 			// TODO authentication here, because i want to pass specific user to
-			// TODO handle async
 			HandleClientAsync(client);
 		}
 	}
@@ -36,15 +50,21 @@ public class Server : IDisposable{
 	private async void HandleClientAsync(TcpClient client){
 		// TODO handle abortion from client
 		var transfer = new JsonTcpTransfer(client);
-		//NetworkStream stream = client.GetStream();
-		byte[] buffer = new byte[1024];
 		
 		while( true ){
+			// TODO create wrap interface instead of an object
 			var m = await transfer.ReceiveAsync<object>();
-			Console.WriteLine(m);
+			Console.WriteLine("Received message from client");
+			Console.WriteLine( m.GetType() );
+			// TODO reflection is not the best idea xddd
+			// good way is to create INotification{ }, ktera bude dva fieldy, NotifEnum a Data
+			if( m is CustomFile ){
+				Console.WriteLine("File received.");
+			}
+			// if( m.Equals("ahoj") ) transfer.Send(m);
 		}
 
-		transfer.Dispose();
+		// transfer.Dispose();
 	}
 
 	public void Dispose(){
