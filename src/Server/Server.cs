@@ -52,16 +52,13 @@ public class Server : IDisposable{
 		var transfer = new JsonTcpTransfer(client);
 		
 		while( true ){
-			// TODO create wrap interface instead of an object
-			var m = await transfer.ReceiveAsync<object>();
+			var m = await Task.Run(() => transfer.Receive<Notification<object>>());
 			Console.WriteLine("Received message from client");
-			Console.WriteLine( m.GetType() );
-			// TODO reflection is not the best idea xddd
-			// good way is to create INotification{ }, ktera bude dva fieldy, NotifEnum a Data
-			if( m is CustomFile ){
-				Console.WriteLine("File received.");
+			if( m.Type == NotifEnum.SubmittedSolution ){
+				Console.WriteLine("Submitted solution.");
+				var f = m.Data; // TODO data conversion does not work
+				Console.WriteLine($"Message: {f}");
 			}
-			// if( m.Equals("ahoj") ) transfer.Send(m);
 		}
 
 		// transfer.Dispose();

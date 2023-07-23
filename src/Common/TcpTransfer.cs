@@ -6,9 +6,24 @@ using System.Text.Json.Serialization;
 
 namespace Communication;
 
+public struct CustomFile{ // TODO change name
+	public string Name { get; set; }
+	public byte[] Content { get; set; }
+
+	public CustomFile(string name, byte[] content){
+		Name = name;
+		Content = content;
+	}
+
+	public void Save(){
+		File.WriteAllBytes(Name ,Content);	
+	}
+}
+
 public interface IObjectTransfer : IDisposable{
 	void Send<T>(T obj);
 	T Receive<T>();
+	Task<T?> ReceiveAsync<T>();
 }
 
 public class JsonTcpTransfer : IObjectTransfer{
@@ -20,8 +35,6 @@ public class JsonTcpTransfer : IObjectTransfer{
 		stream = client.GetStream();
 	}
 
-
-	// TODO special methods for T == FileInfo
 	public void Send<T>(T item){
 		if( stream == null ) throw new InvalidOperationException("stream is null");
 
@@ -40,8 +53,9 @@ public class JsonTcpTransfer : IObjectTransfer{
 			var temp = stream.Read(buffer, 0, buffer.Length);
 			data.Write(buffer, 0, temp);
 		} while(stream.DataAvailable);
-		
-		return JsonSerializer.Deserialize<T>( Encoding.UTF8.GetString(data.ToArray()) );
+	
+		T json = JsonSerializer.Deserialize<T>( Encoding.UTF8.GetString(data.ToArray()) );	
+		return json;
 	}
 
 	public async Task<T?> ReceiveAsync<T>(){
@@ -51,9 +65,11 @@ public class JsonTcpTransfer : IObjectTransfer{
 		var data = new MemoryStream();
 
 		do{	
-			var task  = await Task.Run(() => stream.Read(buffer, 0, buffer.Length));
+			var task  = await stream.ReadAsync(buffer, 0, buffer.Length);
 			await data.WriteAsync(buffer, 0, task);
 		} while(stream.DataAvailable);
+		
+		data.Position = 0;
 
 		return JsonSerializer.Deserialize<T>( Encoding.UTF8.GetString(data.ToArray()) );
 	}

@@ -1,7 +1,9 @@
+using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using Communication;
-using System.Text;
+
+//namespace Client;
 
 class Client{
 	private TcpClient client;
@@ -9,8 +11,10 @@ class Client{
 
 	public Client(){
 		client = new TcpClient();
-		client.Connect("192.168.10.87", 12345);
+		client.Connect("192.168.88.111", 12345);
 		transfer = new JsonTcpTransfer(client);
+
+		// TODO verification in ctor?
 	}
 
 	public void ClientLoop(){
@@ -20,23 +24,22 @@ class Client{
 		//NetworkStream stream = client.GetStream();
 
 		while(true){
+			//var m = await transfer.ReceiveAsync<object>();
+			//Console.WriteLine(m);
 			Console.WriteLine("Enter filename");
-			string message = Console.ReadLine();
+			string file = Console.ReadLine();
 
-			if (message == "exit") break;
-			
-			transfer.Send(message);
+			if (file == "exit") break;
 
-			//byte[] data = Encoding.UTF8.GetBytes(file);
-			//stream.WriteAsync(data, 0, data.Length);
-
-			/*
-			 * byte[] buffer = new byte[1024];
-			 * int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-			 * string response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-			 */
+			var content = File.ReadAllBytes(file);
+			// foreach(var b in content) Console.WriteLine(b);
+			var f = new CustomFile(file, content);	
+			transfer.Send( Notification.Create<string>(NotifEnum.SubmittedSolution, "ahoj") );
 		}
-
+		
 		client.Close();
+		transfer.Dispose();
 	}
+
+
 }

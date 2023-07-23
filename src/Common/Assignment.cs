@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace AppLogic;
+namespace Testing;
 
 // TODO interface for test, so we can have more implementations of test like unittest based or program based
 // maybe Assignment should be more generic then test
@@ -11,13 +11,15 @@ namespace AppLogic;
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
 public readonly struct TestLog{
+	public readonly string Name;
 	public readonly int ExitCode = 0;
 	public readonly TestResult Result = TestResult.NotExecuted;
 	public readonly string Stdout;
 	public readonly string Stderr;
 	public readonly int Points;
 
-	public TestLog(int exitCode, TestResult result, string stdout, string stderr, int points){
+	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points){
+		Name = name;
 		ExitCode = exitCode;
 		Result = result;
 		Stdout = stdout;
@@ -35,15 +37,6 @@ public class Test{
 	private bool inputFileName => File.Exists($"{Name}/in"); // name of file is always in
 	private bool expectedOutputFileName => File.Exists($"{Name}/out"); // name of file is always out
 
-	// these fields are not necessary, it is ok hold TestLog structure
-	[JsonIgnore]
-	public int Points => Result == TestResult.Correct ? maxPoints : 0;
-	[JsonIgnore]
-	public TestResult Result = TestResult.NotExecuted;
-	[JsonIgnore]
-	public string? TestOutput; // TODO ability to hide this field
-	[JsonIgnore]
-	public int ExitCode;
 	[JsonIgnore]
 	public TestLog? Log;
 
@@ -91,8 +84,6 @@ public class Test{
 		}
 	}
 	
-	// TODO security -> test should run in virtual env
-	// TODO return value TestLog
 	public TestLog Run(string programName){
 		var process = new Process(){ StartInfo = SetProcessStartInfo(programName) };
 
@@ -108,10 +99,10 @@ public class Test{
 			if( !process.HasExited ){
 				process.Kill();
 				process.WaitForExit();
-				Result = TestResult.TimeExceeded;
+				result = TestResult.TimeExceeded;
 			} else{
-				if( CorrectOutput(process) ) Result = TestResult.Correct;
-				else Result = TestResult.OutputMismatch;
+				if( CorrectOutput(process) ) result = TestResult.Correct;
+				else result = TestResult.OutputMismatch;
 			}
 		}
 		catch( Exception ex ){
@@ -123,8 +114,8 @@ public class Test{
 			string stderr = process.StandardError.ReadToEnd();
 			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
-			// int exitCode, TestResult result, string stdout, string stderr, int points)
-			Log = new TestLog(exitCode, result, stdout, stderr, points);
+			// TODO save TestLog in users directory
+			Log = new TestLog(Name, exitCode, result, stdout, stderr, points);
 		}
 
 		return (TestLog)Log;
@@ -138,8 +129,6 @@ public class Test{
 			test = new Test();
 		}
 		
-
-		// maybe builder should handle file copying?
 		public Builder WithName(string name){ test.Name = name; return this; }
 		//public Builder WithExpectedOutputFileName(){ test.expectedOutputFileName = true; return this; }
 		public Builder WithMaxPoints(int points){ test.maxPoints = points; return this; }
@@ -151,14 +140,37 @@ public class Test{
 	}
 }
 
-// maybe assignment can hold only name and then all methods dont have to be static
-// but then assignment can hold something like log test etc ...
+public struct AssignmentResult{
+	public List<TestLog> TestLogs;
+	public int CorrectTests;
+	public int IncorrectTests;
+	public int SkippedTests;
+
+	public int PointsTotal;
+
+	public AssignmentResult(List<TestLog> logs){
+		TestLogs = logs;
+
+		foreach(var log in TestLogs){
+			PointsTotal += log.Points;
+
+			if( log.Result == TestResult.Correct ){
+				CorrectTests++;
+			} else if( log.Result == TestResult.OutputMismatch ){
+				IncorrectTests++;
+			} else{
+				SkippedTests++;
+			}
+		}
+	}
+}
+
 public class Assignment{
 	public List<string> testNames;
 	public string Name;
 	public int PointsTotal = 0;
 
-	public List<TestLog> Result;
+	public AssignmentResult Result;
 
 	public Assignment(string name){
 		Name = GetFullAssignmentName(name);
@@ -196,23 +208,24 @@ public class Assignment{
 		foreach(var testName in Directory.GetDirectories($"{Name}")){
 			var config = File.ReadAllText($"{testName}/config.json");
 			var test = JsonSerializer.Deserialize<Test>(config);
+			Console.WriteLine(test.GetType() );
 			tests.Add(test!);
 		}
 
 		return tests;
 	}
 
-	public List<TestLog> RunTests(string programName){
-		PointsTotal = 0;
+	public AssignmentResult RunTests(string programName){
 		var tests = DeserializeTests();
-		var result = new List<TestLog>();
+		var temp = new List<TestLog>();
 
 		foreach(var test in tests){
-			test.Run(programName);
-			PointsTotal += test.Points;
+			temp.Add( test.Run(programName) );
 		}
 
-		return result;
+		Result = new AssignmentResult(temp);
+
+		return Result;
 	}
 
 	private bool ValidTestName(string testName) => !Directory.Exists($"Data/Assignments/{testName}");
@@ -243,6 +256,10 @@ public class Assignment{
 	}
 
 	public void RemoveTest(string testName){
-		// TODO
+		string testDirectory = $"{Name}/{testName}";
+
+		if( Directory.Exists(testDirectory) ){
+			Directory.Delete(testDirectory, true);
+		}
 	}
 }

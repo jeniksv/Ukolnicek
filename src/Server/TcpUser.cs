@@ -6,6 +6,8 @@ using Communication;
 // TODO tohle dava smysl do budoucna
 class TcpUser : IDisposable{
         private readonly IObjectTransfer transfer;
+	public string Name;
+	public bool IsAdmin;
 
         public TcpUser(TcpClient client){
                 transfer = new JsonTcpTransfer(client);
