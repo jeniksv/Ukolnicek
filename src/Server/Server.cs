@@ -8,13 +8,13 @@ namespace AppServer;
 
 public class Server : IDisposable{
 	private readonly TcpListener server;
-	private List<TcpClient> clients; // TODO create abstraction for TcpClient
+	private List<TcpUser> clients; // TODO create abstraction for TcpClient
 
 	public Server(int port = 8888){
 		Console.WriteLine("Server started.");
 
 		server = new TcpListener(IPAddress.Any, port);
-		clients = new List<TcpClient>();
+		clients = new List<TcpUser>();
 		
 		server.Start();
 	}
@@ -39,11 +39,13 @@ public class Server : IDisposable{
 			var client = await server.AcceptTcpClientAsync();
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 			
-			clients.Add(client);
+			// clients.Add(client);
 
-			// var newClient = new TcpUser(client);
+			var newClient = new TcpUser(client);
+			
+			clients.Add(newClient);
 			// TODO authentication here, because i want to pass specific user to
-			HandleClientAsync(client);
+			//HandleClientAsync(client);
 		}
 	}
 

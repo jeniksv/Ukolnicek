@@ -1,4 +1,3 @@
-/*
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
@@ -8,23 +7,27 @@ using Testing;
 /// <summary>
 ///     Way to communicate with the server from the UI - it also holds the game state.
 /// </summary>
-public abstract class Client{
+public class Admin{
 	public string Name;
-	protected TcpClient client;
+	public int Id;
+	// protected TcpClient client;
 	protected IObjectTransfer transfer;
 
-	public Client(string name){
+	public Admin(string name, string ip, int port){
 		Name = name;
-		client = new TcpClient();
-		client.Connect("192.168.10.87", 12345);
-		transfer = new JsonTcpTransfer(client);
+		transfer = new JsonTcpTransfer(ip, port);
+
+		Id = transfer.Receive<Notification<int>>().Data;
+		// Console.WriteLine("received!");
+		transfer.Send( new Response<string> {Data = name} );
 		// TODO verification in ctor?
 	}
 
 	// TODO use events
 	public void ClientLoop(){
 		while( true ){
-			var update = transfer.Receive<Notification<object>>();
+			var update = transfer.Receive<INotification<object>>();
+			Console.WriteLine($"{Name}: {update.Type}");
 
 			try{
 				HandleNotification(update);
@@ -37,9 +40,9 @@ public abstract class Client{
 		}
 	}
 
-	public void HandleNotification(Notification<object> update){
+	public void HandleNotification(INotification<object> update){
 		switch(update.Type){
-			case NotifyEnum.TestResult:
+			case NotifEnum.AskName:
 				DisplayAssignmentResult((AssignmentResult)update.Data);
 				break;
 		}
@@ -74,11 +77,15 @@ public abstract class Client{
 		}
 
 		Console.WriteLine();
-		Console.WriteLine($"Passed: {result.CorrectTests}, Failed: {result.IncorrectTests}, Skipped: {result.Skipped}");
+		Console.WriteLine($"Passed: {result.CorrectTests}, Failed: {result.IncorrectTests}, Skipped: {result.SkippedTests}");
 		Console.WriteLine($"Points: {result.PointsTotal}");
 	}
-}
 
+	private T GetData<T>(INotification<object> update){
+		return (T)(update.Data ?? throw new InvalidOperationException($""));
+	}
+}
+/*
 public class Admin : Client{
 	public Admin(string name) : base(name){}
 
