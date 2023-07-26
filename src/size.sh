@@ -6,14 +6,16 @@ function get_file_size() {
 }
 
 files=( "Common/Assignment.cs" \
+	"Common/Test.cs" \
 	"Common/TcpTransfer.cs" \
 	"Common/Notifications.cs" \
 	"Server/Program.cs" \
        	"Server/Server.cs" \
 	"Server/TcpUser.cs" \
 	"Client/Program.cs" \
-       	"Client/Client.cs"\
-	"Client/IClient.cs")
+       	"Client/Client.cs" \
+	"Client/Admin.cs" \
+	"Client/Student.cs")
 
 total_size=0
 

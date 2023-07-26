@@ -2,12 +2,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Communication;
+using Testing;
 
-// TODO tohle dava smysl do budoucna
+namespace AppServer;
+
+// TODO mutexes for admin operations
 public class TcpUser : IDisposable{
         private readonly IObjectTransfer transfer;
 	public string Name;
-	// public bool IsAdmin;
 
         public TcpUser(TcpClient client){
                 transfer = new JsonTcpTransfer(client);
@@ -20,6 +22,17 @@ public class TcpUser : IDisposable{
 		Name = nameResponse.Data;
 		Console.WriteLine(Name);
         }
+
+	// TODO async ?
+	public void ClientLoop(){
+		var f = GetResponse<CustomFile>();
+		f.Data.Save();
+		IAssignment a = new Assignment("Prime");
+		var r = a.RunTests(f.Data.Name);
+		Notify(Notification.Create(NotifEnum.AssignmentResult, r));
+		while( true ){
+		}
+	}
 
         public IResponse<T> GetResponse<T>(){
         	return transfer.Receive<IResponse<T>>();

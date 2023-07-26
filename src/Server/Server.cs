@@ -19,6 +19,7 @@ public class Server : IDisposable{
 		server.Start();
 	}
 
+	/*
 	private void FirstSetUp(){
 		// TODO ask for path for data => timhle si zas vykopes hrob
 		if( !Directory.Exists("Data") ){
@@ -32,38 +33,17 @@ public class Server : IDisposable{
 			var passwd = Console.ReadLine();
 			File.WriteAllText($"Data/Users/{name}/passwd", passwd);
 		}
-	}
+	} */
 
 	public async Task MainLoop(){
 		while( true ){
 			var client = await server.AcceptTcpClientAsync();
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 			
-			// clients.Add(client);
-
 			var newClient = new TcpUser(client);
-			
+			newClient.ClientLoop();
 			clients.Add(newClient);
-			// TODO authentication here, because i want to pass specific user to
-			//HandleClientAsync(client);
 		}
-	}
-
-	private async void HandleClientAsync(TcpClient client){
-		// TODO handle abortion from client
-		var transfer = new JsonTcpTransfer(client);
-		
-		while( true ){
-			var m = await Task.Run(() => transfer.Receive<Notification<object>>());
-			Console.WriteLine("Received message from client");
-			if( m.Type == NotifEnum.SubmittedSolution ){
-				Console.WriteLine("Submitted solution.");
-				var f = m.Data; // TODO data conversion does not work
-				Console.WriteLine($"Message: {f}");
-			}
-		}
-
-		// transfer.Dispose();
 	}
 
 	public void Dispose(){
@@ -72,7 +52,7 @@ public class Server : IDisposable{
 	}
 
 	private void ReleaseUnmanagedResources(){
-		// foreach(var client in clients) client.Close(); // in case of TcpUser Dispose()
+		foreach(var client in clients) client.Dispose(); 
 		server.Stop();
 		Console.WriteLine("Server stopped.");
 	}

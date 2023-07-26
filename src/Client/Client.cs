@@ -2,44 +2,93 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using Communication;
+using Testing;
 
-//namespace Client;
+namespace AppClient;
 
-class Client{
-	private TcpClient client;
-	private IObjectTransfer transfer;
+/// <summary>
+/// pattern for classes Student and Admin
+/// </summary>
+public abstract class Client{
+	public string Name;
+	public int Id;
+	protected IObjectTransfer transfer;
 
-	public Client(){
-		client = new TcpClient();
-		client.Connect("192.168.88.111", 12345);
-		transfer = new JsonTcpTransfer(client);
+	// TODO change client server logic
+	public Client(string name, string ip, int port){
+		Name = name;
+		transfer = new JsonTcpTransfer(ip, port);
 
-		// TODO verification in ctor?
+		Id = transfer.Receive<Notification<int>>().Data;
+		transfer.Send( new Response<string> {Data = name} );
 	}
 
+	// TODO use events
 	public void ClientLoop(){
-		// client.Connect("192.168.10.87", 12345);
-		Console.WriteLine("Connected to server.");
+		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
+		transfer.Send( new Response<CustomFile> {Data = c} );
 
-		//NetworkStream stream = client.GetStream();
+		while( true ){
+			var update = transfer.Receive<INotification<object>>();
+			Console.WriteLine($"{Name}: {update.Type}");
 
-		while(true){
-			//var m = await transfer.ReceiveAsync<object>();
-			//Console.WriteLine(m);
-			Console.WriteLine("Enter filename");
-			string file = Console.ReadLine();
-
-			if (file == "exit") break;
-
-			var content = File.ReadAllBytes(file);
-			// foreach(var b in content) Console.WriteLine(b);
-			var f = new CustomFile(file, content);	
-			transfer.Send( Notification.Create<string>(NotifEnum.SubmittedSolution, "ahoj") );
+			try{
+				HandleNotification(update);
+			} catch(InvalidOperationException ex){
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 		}
-		
-		client.Close();
-		transfer.Dispose();
 	}
 
+	public void HandleNotification(INotification<object> update){
+		switch(update.Type){
+			case NotifEnum.AssignmentResult:
+				DisplayAssignmentResult((AssignmentResult)update.Data);
+				break;
+		}
+	}
 
+	public void DisplayAssignmentResult(AssignmentResult result){
+		foreach(var testLog in result.TestLogs){
+			Console.Write($"Test: {testLog.Name}");
+
+			if( testLog.Result == TestResult.Correct ){
+				Console.WriteLine(" ... OK");
+				continue;
+			}
+			
+			Console.WriteLine(" ... FAILED");
+
+			if( testLog.Result == TestResult.OutputMismatch ){
+				Console.WriteLine("Stdout actual:");
+				Console.WriteLine($"{testLog.Stdout}");
+				Console.WriteLine($"Stdou expected:"); // TODO also display Expected output
+				continue;
+			}
+			
+			if( testLog.Result == TestResult.TimeExceeded ){
+				Console.WriteLine("Time exceeded");
+				continue;
+			}
+			
+			Console.WriteLine("Stderr:");
+			Console.WriteLine($"{testLog.Stderr}");
+		}
+
+		Console.WriteLine();
+		Console.WriteLine($"Passed: {result.CorrectTests}, Failed: {result.IncorrectTests}, Skipped: {result.SkippedTests}");
+		Console.WriteLine($"Points: {result.PointsTotal}");
+	}
+
+	public IResponse<T> GetResponse<T>(){
+                return transfer.Receive<IResponse<T>>();
+        }
+
+	public void Notify<T>(INotification<T> notification){
+                transfer.Send(notification);
+        }
+
+	private T GetData<T>(INotification<object> update){
+		return (T)(update.Data ?? throw new InvalidOperationException($""));
+	}
 }
