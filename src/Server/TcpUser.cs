@@ -13,47 +13,14 @@ public class TcpUser : IDisposable{
 
         public TcpUser(TcpClient client){
                 transfer = new JsonTcpTransfer(client);
-		Name = transfer.Receive<Notification<string>>().Data;
-		string passwd = transfer.Receive<Notification<string>>().Data;
-		bool result = Name == "Ann" && passwd == "123";
-		transfer.Send( new Response<bool>() { Data = result } );
-		/*
-		var n = Notification.Create(NotifEnum.AskName, 123);
-		Console.WriteLine(n.Data.GetType());
-		Notify(Notification.Create(NotifEnum.AskName, 123));
-		var nameResponse = GetResponse<string>();
-
-		Name = nameResponse.Data;
-		Console.WriteLine(Name);
-		*/
         }
 
-	// TODO async ?
+	private void Verification(){
+	}
+
 	public void ClientLoop(){
-		/*
-		var f = GetResponse<CustomFile>();
-		f.Data.Save();
-		IAssignment a = new Assignment("Prime");
-		var r = a.RunTests(f.Data.Name);
-		Notify(Notification.Create(NotifEnum.AssignmentResult, r));
-		while( true ){
-		}*/
+		Verification();
 	}
-
-        public IResponse<T> GetResponse<T>(){
-        	return transfer.Receive<IResponse<T>>();
-	}
-
-        public void Notify<T>(INotification<T> notification){
-                transfer.Send(notification);
-        }
-
-        public async Task<T?> GetResponseAsync<T>(){
-                var responseTask = Task.Run(() => transfer.Receive<IResponse<T>>());
-                var completedTask = await Task.WhenAny(responseTask, Task.Delay(TimeSpan.FromSeconds(5))); 
-
-                return responseTask.Result.Data;
-        }
 
 	private T GetData<T>(INotification<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));

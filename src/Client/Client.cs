@@ -108,12 +108,11 @@ public abstract class User{
 ///     Factory for creating clients.
 /// </summary>
 public static class Client{
-	private static string ip = "10.102.56.201";
+	private static string ip = "192.168.10.87";
 	private static int port = 12345;
 
 	public static User Create(){
-		bool isAdmin = false;
 		IObjectTransfer transfer = new JsonTcpTransfer(ip, port);
-		return isAdmin ? new Admin("Jenik", transfer) : new Student("Ann", transfer);
+		return new Admin("Ann", transfer);
 	}
 }

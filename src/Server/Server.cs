@@ -8,7 +8,7 @@ namespace AppServer;
 
 public class Server : IDisposable{
 	private readonly TcpListener server;
-	private List<TcpUser> clients; // TODO create abstraction for TcpClient
+	private List<TcpUser> clients;
 
 	public Server(int port = 8888){
 		Console.WriteLine("Server started.");
@@ -18,22 +18,6 @@ public class Server : IDisposable{
 		
 		server.Start();
 	}
-
-	/*
-	private void FirstSetUp(){
-		// TODO ask for path for data => timhle si zas vykopes hrob
-		if( !Directory.Exists("Data") ){
-			Directory.CreateDirectory("Data");
-			Directory.CreateDirectory("Data/Assignments");
-			Directory.CreateDirectory("Data/Users");
-			Console.WriteLine("Enter user name");
-			var name = Console.ReadLine();
-			Directory.CreateDirectory($"Data/Users/{name}");
-			Console.WriteLine("Enter your password"); // TODO dont display this line
-			var passwd = Console.ReadLine();
-			File.WriteAllText($"Data/Users/{name}/passwd", passwd);
-		}
-	} */
 
 	public async Task MainLoop(){
 		while( true ){
