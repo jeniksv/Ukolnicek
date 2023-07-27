@@ -18,12 +18,6 @@ public abstract class User{
 	public User(string name, IObjectTransfer t){
 		Name = name;
 		transfer = t; 
-		
-		Notify(Notification.Create(NotifEnum.Verification, Name));
-		Notify(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
-		var verified = GetResponse<bool>();
-		Console.WriteLine(verified.Data);
-		
 		/*
 		Id = transfer.Receive<Notification<int>>().Data;
 		transfer.Send( new Response<string> {Data = name} );
@@ -105,7 +99,7 @@ public abstract class User{
 }
 
 /// <summary>
-///     Factory for creating clients.
+///     Factory for creating users.
 /// </summary>
 public static class Client{
 	private static string ip = "192.168.10.87";
@@ -113,6 +107,8 @@ public static class Client{
 
 	public static User Create(){
 		IObjectTransfer transfer = new JsonTcpTransfer(ip, port);
+		transfer.Send(Notification.Create(NotifEnum.Verification, "Ann"));
+		transfer.Send(Notification.Create(NotifEnum.Verification, "123"));
 		return new Admin("Ann", transfer);
 	}
 }

@@ -16,6 +16,10 @@ public class TcpUser : IDisposable{
         }
 
 	private void Verification(){
+		var name = transfer.Receive<Notification<string>>().Data;
+		var passwd = transfer.Receive<Notification<string>>().Data;
+		Console.WriteLine(name);
+		Console.WriteLine(passwd);
 	}
 
 	public void ClientLoop(){
