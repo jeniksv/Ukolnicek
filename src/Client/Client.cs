@@ -94,7 +94,7 @@ public abstract class User{
         }
 
 	private T GetData<T>(INotification<object> update){
-		return (T)(update.Data ?? throw new InvalidOperationException($""));
+		return (T)(update.Data) ?? throw new InvalidOperationException($"");
 	}
 }
 
@@ -107,8 +107,20 @@ public static class Client{
 
 	public static User Create(){
 		IObjectTransfer transfer = new JsonTcpTransfer(ip, port);
-		transfer.Send(Notification.Create(NotifEnum.Verification, "Ann"));
-		transfer.Send(Notification.Create(NotifEnum.Verification, "123"));
-		return new Admin("Ann", transfer);
+		while(true){
+			Console.Write("Enter your username: ");
+			transfer.Send(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
+			Console.Write("Enter you password: "); // TODO hive passwd, should be in GUI
+			transfer.Send(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
+
+			var verified = transfer.Receive<IResponse<bool>>().Data;
+			
+			if( verified ){
+				var isAdmin = transfer.Receive<IResponse<bool>>().Data;
+				return isAdmin ? new Admin("Jenda", transfer) : new Student("Ann", transfer); // TODO use user names
+			}
+
+			Console.WriteLine("Incorrect username or password.");
+		}
 	}
 }

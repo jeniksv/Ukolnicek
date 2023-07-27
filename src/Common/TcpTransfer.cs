@@ -43,7 +43,7 @@ public class JsonTcpTransfer : IObjectTransfer{
 	public T Receive<T>(){
 		if( stream == null ) throw new InvalidOperationException("stream is null");
 	
-		string json;
+		string json = prevJson;
 
 		if( prevJson.Length == 0 ){	
 			var buffer = new byte[1024];
@@ -55,16 +55,10 @@ public class JsonTcpTransfer : IObjectTransfer{
 			} while(stream.DataAvailable);
 		
 			var jsonBytes = data.ToArray();
-			json = prevJson + Encoding.UTF8.GetString(jsonBytes);
-			prevJson = "";
-			//var item = JsonConvert.DeserializeObject(json, settings);
-		
-			//if( item is T t ) return t;
-			//throw new InvalidCastException($"Cannot cast {item.GetType()} to {typeof(T)}");
-		} else {
-			json = prevJson;
-			prevJson = "";
+			json += Encoding.UTF8.GetString(jsonBytes);
 		}
+
+		prevJson = "";
 
 		var jsons = json.Split("}{");
 

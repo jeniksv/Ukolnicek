@@ -16,10 +16,20 @@ public class TcpUser : IDisposable{
         }
 
 	private void Verification(){
-		var name = transfer.Receive<Notification<string>>().Data;
-		var passwd = transfer.Receive<Notification<string>>().Data;
-		Console.WriteLine(name);
-		Console.WriteLine(passwd);
+		while(true){
+			Name = transfer.Receive<Notification<string>>().Data;
+			var passwd = transfer.Receive<Notification<string>>().Data;
+			// TODO read name and passwd from users directory
+			var verified = Name == "Ann" && passwd == "123";
+			transfer.Send( new Response<bool> {Data = verified} );
+
+			if( verified ){
+				// TODO get isAdmin from users directory
+				var isAdmin = true;
+				transfer.Send( new Response<bool> {Data = isAdmin} );
+				break;
+			}
+		}
 	}
 
 	public void ClientLoop(){
