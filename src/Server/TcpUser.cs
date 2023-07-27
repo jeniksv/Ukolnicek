@@ -13,7 +13,11 @@ public class TcpUser : IDisposable{
 
         public TcpUser(TcpClient client){
                 transfer = new JsonTcpTransfer(client);
-		
+		Name = transfer.Receive<Notification<string>>().Data;
+		string passwd = transfer.Receive<Notification<string>>().Data;
+		bool result = Name == "Ann" && passwd == "123";
+		transfer.Send( new Response<bool>() { Data = result } );
+		/*
 		var n = Notification.Create(NotifEnum.AskName, 123);
 		Console.WriteLine(n.Data.GetType());
 		Notify(Notification.Create(NotifEnum.AskName, 123));
@@ -21,17 +25,19 @@ public class TcpUser : IDisposable{
 
 		Name = nameResponse.Data;
 		Console.WriteLine(Name);
+		*/
         }
 
 	// TODO async ?
 	public void ClientLoop(){
+		/*
 		var f = GetResponse<CustomFile>();
 		f.Data.Save();
 		IAssignment a = new Assignment("Prime");
 		var r = a.RunTests(f.Data.Name);
 		Notify(Notification.Create(NotifEnum.AssignmentResult, r));
 		while( true ){
-		}
+		}*/
 	}
 
         public IResponse<T> GetResponse<T>(){
@@ -48,6 +54,10 @@ public class TcpUser : IDisposable{
 
                 return responseTask.Result.Data;
         }
+
+	private T GetData<T>(INotification<object> update){
+		return (T)(update.Data ?? throw new InvalidOperationException($""));
+	}
 
         public void Dispose(){
                 transfer.Dispose();

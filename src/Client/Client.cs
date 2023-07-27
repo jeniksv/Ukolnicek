@@ -18,7 +18,12 @@ public abstract class User{
 	public User(string name, IObjectTransfer t){
 		Name = name;
 		transfer = t; 
-
+		
+		Notify(Notification.Create(NotifEnum.Verification, Name));
+		Notify(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
+		var verified = GetResponse<bool>();
+		Console.WriteLine(verified.Data);
+		
 		/*
 		Id = transfer.Receive<Notification<int>>().Data;
 		transfer.Send( new Response<string> {Data = name} );
@@ -44,11 +49,12 @@ public abstract class User{
 	}
 
 	public void HandleNotification(INotification<object> update){
+		/*
 		switch(update.Type){
 			case NotifEnum.AssignmentResult:
 				DisplayAssignmentResult((AssignmentResult)update.Data);
 				break;
-		}
+		} */
 	}
 
 	public void DisplayAssignmentResult(AssignmentResult result){
@@ -79,7 +85,9 @@ public abstract class User{
 		}
 
 		Console.WriteLine();
-		Console.WriteLine($"Passed: {result.CorrectTests}, Failed: {result.IncorrectTests}, Skipped: {result.SkippedTests}");
+		Console.Write($"Passed: {result.CorrectTests},");
+		Console.Write($"Failed: {result.IncorrectTests},");
+		Console.WriteLine($"Skipped: {result.SkippedTests}");
 		Console.WriteLine($"Points: {result.PointsTotal}");
 	}
 

@@ -5,8 +5,9 @@ namespace Communication;
 // TODO inner logic, client has notifications and server has responses ?
 public enum NotifEnum{
 	SubmittedSolution,
-	AssignmentResult,
-	AskName,
+	Verification,
+	ShowAssignment,
+	ShowAssignments,
 	/*
 	 * -> User student
 	 * EvalSolution
