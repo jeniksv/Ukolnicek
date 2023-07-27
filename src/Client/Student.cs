@@ -1,5 +1,7 @@
+using Communication;
+
 namespace AppClient;
 
-public class Student : Admin{
-	public Student(string name, string ip, int port) : base(name, ip, port){}
+public class Student : User{
+	public Student(string name, IObjectTransfer transfer) : base(name, transfer){}
 }

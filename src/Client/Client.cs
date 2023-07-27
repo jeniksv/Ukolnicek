@@ -9,22 +9,25 @@ namespace AppClient;
 /// <summary>
 /// pattern for classes Student and Admin
 /// </summary>
-public abstract class Client{
+public abstract class User{
 	public string Name;
 	public int Id;
 	protected IObjectTransfer transfer;
 
 	// TODO change client server logic
-	public Client(string name, string ip, int port){
+	public User(string name, IObjectTransfer t){
 		Name = name;
-		transfer = new JsonTcpTransfer(ip, port);
+		transfer = t; 
 
+		/*
 		Id = transfer.Receive<Notification<int>>().Data;
 		transfer.Send( new Response<string> {Data = name} );
+		*/
 	}
 
 	// TODO use events
 	public void ClientLoop(){
+		/*
 		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
 		transfer.Send( new Response<CustomFile> {Data = c} );
 
@@ -37,7 +40,7 @@ public abstract class Client{
 			} catch(InvalidOperationException ex){
 				Console.WriteLine($"Error: {ex.Message}");
 			}
-		}
+		} */
 	}
 
 	public void HandleNotification(INotification<object> update){
@@ -90,5 +93,19 @@ public abstract class Client{
 
 	private T GetData<T>(INotification<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));
+	}
+}
+
+/// <summary>
+///     Factory for creating clients.
+/// </summary>
+public static class Client{
+	private static string ip = "10.102.56.201";
+	private static int port = 12345;
+
+	public static User Create(){
+		bool isAdmin = false;
+		IObjectTransfer transfer = new JsonTcpTransfer(ip, port);
+		return isAdmin ? new Admin("Jenik", transfer) : new Student("Ann", transfer);
 	}
 }
