@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Communication;
 
 public interface IObjectTransfer : IDisposable{
-	void Send<T>(T obj);
+	void Send<T>(T item);
 	T Receive<T>();
 }
 
@@ -29,8 +29,6 @@ public class JsonTcpTransfer : IObjectTransfer{
 		client.Connect(ip, port);
 		stream = client.GetStream();
 	}
-
-
 
 	public void Send<T>(T item){
 		if( stream == null ) throw new InvalidOperationException("stream is null");

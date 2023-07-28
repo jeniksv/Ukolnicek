@@ -19,7 +19,7 @@ public abstract class User{
 		Name = name;
 		transfer = t; 
 		/*
-		Id = transfer.Receive<Notification<int>>().Data;
+		Id = transfer.Receive<Request<int>>().Data;
 		transfer.Send( new Response<string> {Data = name} );
 		*/
 	}
@@ -31,21 +31,21 @@ public abstract class User{
 		transfer.Send( new Response<CustomFile> {Data = c} );
 
 		while( true ){
-			var update = transfer.Receive<INotification<object>>();
+			var update = transfer.Receive<IRequest<object>>();
 			Console.WriteLine($"{Name}: {update.Type}");
 
 			try{
-				HandleNotification(update);
+				HandleRequest(update);
 			} catch(InvalidOperationException ex){
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 		} */
 	}
 
-	public void HandleNotification(INotification<object> update){
+	public void HandleRequest(IRequest<object> update){
 		/*
 		switch(update.Type){
-			case NotifEnum.AssignmentResult:
+			case RequestEnum.AssignmentResult:
 				DisplayAssignmentResult((AssignmentResult)update.Data);
 				break;
 		} */
@@ -89,11 +89,11 @@ public abstract class User{
                 return transfer.Receive<IResponse<T>>();
         }
 
-	public void Notify<T>(INotification<T> notification){
+	public void Notify<T>(IRequest<T> notification){
                 transfer.Send(notification);
         }
 
-	private T GetData<T>(INotification<object> update){
+	private T GetData<T>(IRequest<object> update){
 		return (T)(update.Data) ?? throw new InvalidOperationException($"");
 	}
 }
@@ -109,9 +109,9 @@ public static class Client{
 		IObjectTransfer transfer = new JsonTcpTransfer(ip, port);
 		while(true){
 			Console.Write("Enter your username: ");
-			transfer.Send(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
+			transfer.Send(Request.Create(RequestEnum.Login, Console.ReadLine()));
 			Console.Write("Enter you password: "); // TODO hive passwd, should be in GUI
-			transfer.Send(Notification.Create(NotifEnum.Verification, Console.ReadLine()));
+			transfer.Send(Request.Create(RequestEnum.Login, Console.ReadLine()));
 
 			var verified = transfer.Receive<IResponse<bool>>().Data;
 			

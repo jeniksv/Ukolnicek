@@ -10,7 +10,7 @@ namespace Testing;
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
-public readonly struct TestLog{
+public readonly struct TestLog{ // TODO properties
 	public readonly string Name;
 	public readonly int ExitCode = 0;
 	public readonly TestResult Result = TestResult.NotExecuted;

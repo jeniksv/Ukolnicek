@@ -8,7 +8,8 @@ function get_file_size() {
 files=( "Common/Assignment.cs" \
 	"Common/Test.cs" \
 	"Common/TcpTransfer.cs" \
-	"Common/Notifications.cs" \
+	"Common/Request.cs" \
+	"Common/Response.cs" \
 	"Server/Program.cs" \
        	"Server/Server.cs" \
 	"Server/TcpUser.cs" \

@@ -17,8 +17,8 @@ public class TcpUser : IDisposable{
 
 	private void Verification(){
 		while(true){
-			Name = transfer.Receive<Notification<string>>().Data;
-			var passwd = transfer.Receive<Notification<string>>().Data;
+			Name = transfer.Receive<Request<string>>().Data;
+			var passwd = transfer.Receive<Request<string>>().Data;
 			// TODO read name and passwd from users directory
 			var verified = Name == "Ann" && passwd == "123";
 			transfer.Send( new Response<bool> {Data = verified} );
@@ -36,7 +36,19 @@ public class TcpUser : IDisposable{
 		Verification();
 	}
 
-	private T GetData<T>(INotification<object> update){
+	public void HandleRequest(IRequest<object> update){
+		switch(update.Type){
+			case RequestEnum.SubmittedSolution:
+				break;
+			//case RequestEnum.:
+		}
+	}
+
+	private void SubmittedSolution(IRequest<object> update){
+	
+	}
+
+	private T GetData<T>(IRequest<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));
 	}
 
