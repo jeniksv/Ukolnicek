@@ -11,12 +11,12 @@ namespace Testing;
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
 public readonly struct TestLog{ // TODO properties
-	public readonly string Name;
-	public readonly int ExitCode = 0;
-	public readonly TestResult Result = TestResult.NotExecuted;
-	public readonly string Stdout;
-	public readonly string Stderr;
-	public readonly int Points;
+	public readonly string Name { get; }
+	public readonly int ExitCode { get; }
+	public readonly TestResult Result { get; }
+	public readonly string Stdout { get; }
+	public readonly string Stderr { get; }
+	public readonly int Points { get; }
 
 	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points){
 		Name = name;
@@ -101,6 +101,7 @@ public class Test{
 				process.WaitForExit();
 				result = TestResult.TimeExceeded;
 			} else{
+				// TODO stdout does not display
 				if( CorrectOutput(process) ) result = TestResult.Correct;
 				else result = TestResult.OutputMismatch;
 			}

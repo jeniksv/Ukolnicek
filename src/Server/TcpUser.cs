@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using Communication;
 using Testing;
+using Newtonsoft.Json;
 
 namespace AppServer;
 
@@ -20,14 +21,15 @@ public class TcpUser : IDisposable{
 		while(true){
 			Name = transfer.Receive<Request<string>>().Data;
 			var passwd = transfer.Receive<Request<string>>().Data;
-			// TODO read name and passwd from users directory
-			var verified = Name == "Ann" && passwd == "123";
+			
+			Console.WriteLine(Directory.Exists($"Data/Users/{Name}"));
+			Console.WriteLine(File.ReadAllText($"Data/Users/{Name}/passwd"));
+			var verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
 			transfer.Send( new Response<bool> {Data = verified} );
 
 			if( verified ){
-				// TODO get isAdmin from users directory
 				var isAdmin = true;
-				transfer.Send( new Response<bool> {Data = isAdmin} );
+				transfer.Send( new Response<bool> { Data = File.Exists($"Data/Users/{Name}/admin") } );
 				break;
 			}
 		}
@@ -37,12 +39,12 @@ public class TcpUser : IDisposable{
 		Verification();
 		
 		while( true ){
-			var request = transfer.Receive<IRequest<object>>();
+			var request = transfer.Receive<IRequest<object>>(); // TODO handle end of transfer
+			
+			if(request.Type == RequestEnum.Exit) break;
+
 			Console.WriteLine($"{Name} - {request.Type}");
 			HandleRequest(request);
-
-			Console.WriteLine("OK");
-			Thread.Sleep(100);
 		}
 	}
 
@@ -51,7 +53,9 @@ public class TcpUser : IDisposable{
 			case RequestEnum.SubmittedSolution:
 				SubmittedSolution(request);
 				break;
-			//case RequestEnum.:
+			case RequestEnum.CreateUser:
+				CreateUser(request);
+				break;
 		}
 	}
 
@@ -59,14 +63,47 @@ public class TcpUser : IDisposable{
 
 	// TODO create static class Action -> Action.HandleSubmittedSolution -> return type should be send then
 	// but i do not want to pass transfer object somewhere else
+	private string SolutionName(string assignmentName){
+		int i = 1;
+	
+		while( true ){
+			var temp = i < 10 ? $"0{i}" : $"{i}";
+			if( !Directory.Exists($"Data/Users/{Name}/{assignmentName}/Solution{temp}") ){
+				return $"Solution{temp}";
+			}
+
+			i++;
+		}
+	}
+
 	private void SubmittedSolution(IRequest<object> request){
+		var assignmentName = "Prime";
 		var file = GetData<CustomFile>(request);
 		file.Save();
-		IAssignment a = new Assignment("Prime");
+		IAssignment a = new Assignment(assignmentName);
 		var result = a.RunTests(file.Name);
-		// TODO move file to users repository
-		// TODO create new Solution[0-9][0-9] directory and store result here
 		transfer.Send( new Response<AssignmentResult> {Data = result} );
+		var solutionName = SolutionName(assignmentName);	
+		Directory.CreateDirectory($"Data/Users/{Name}/{assignmentName}/{solutionName}");
+		File.Move(file.Name, $"Data/Users/{Name}/{assignmentName}/{solutionName}/{file.Name}");
+		var json = JsonConvert.SerializeObject(result);
+		File.WriteAllText($"Data/Users/{Name}/{assignmentName}/{solutionName}/result", json);
+	}
+
+	private void CreateUser(IRequest<object> request){
+		// TODO je to chlupaty jak opice ale na refaktoring zatim neni cas
+		var userName = GetData<string>(request);
+		while(true){
+			var correctUserName = !Directory.Exists($"Data/Users/{userName}");
+			transfer.Send( new Response<bool> {Data = correctUserName} );
+			if( correctUserName ){
+				var passwd = transfer.Receive<Request<string>>().Data;
+				Directory.CreateDirectory($"Data/Users/{userName}");
+				File.WriteAllText($"Data/Users/{userName}/passwd", passwd);
+				break;
+			}
+			userName = transfer.Receive<Request<string>>().Data;
+		}
 	}
 
 	private T GetData<T>(IRequest<object> update){

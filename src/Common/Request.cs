@@ -6,6 +6,7 @@ namespace Communication;
 public enum RequestEnum{
 	SubmittedSolution,
 	Login,
+	Exit,
 	CreateUser,
 	ShowAssignments, // List<string>
 	ShowAssignment, // zadani plus pokusy co byly List<string> + README.md

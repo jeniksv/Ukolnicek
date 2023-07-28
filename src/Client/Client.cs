@@ -26,35 +26,31 @@ public abstract class User{
 
 	// TODO use events
 	public void ClientLoop(){
-		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
-		Console.WriteLine("OK1");
-		//transfer.Send( new Response<CustomFile> {Data = c} );
-		Notify( Request.Create(RequestEnum.SubmittedSolution, c) );
-		Console.WriteLine("OK2");
-		var response = GetResponse<AssignmentResult>();
-		Console.WriteLine("OK3");
-		DisplayAssignmentResult( response.Data );
-		while(true){}
-		/*
-		while( true ){
-			var update = transfer.Receive<IRequest<object>>();
-			Console.WriteLine($"{Name}: {update.Type}");
-
-			try{
-				HandleRequest(update);
-			} catch(InvalidOperationException ex){
-				Console.WriteLine($"Error: {ex.Message}");
-			}
-		} */
+		SubmitSolution();
+		CreateUser();
+		Notify( Request.Create(RequestEnum.Exit) );
 	}
 
-	public void HandleRequest(IRequest<object> update){
-		/*
-		switch(update.Type){
-			case RequestEnum.AssignmentResult:
-				DisplayAssignmentResult((AssignmentResult)update.Data);
+	private void SubmitSolution(){
+		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
+		Notify( Request.Create(RequestEnum.SubmittedSolution, c) );
+		var response = GetResponse<AssignmentResult>();
+		DisplayAssignmentResult( response.Data );
+	}
+
+	private void CreateUser(){
+		while(true){
+			Console.Write("Enter username: ");
+			Notify( Request.Create(RequestEnum.CreateUser, Console.ReadLine()) );
+			var response = GetResponse<bool>();
+			if( response.Data ){
+				// something like passwords are same and thne notify
+				Console.Write("Enter password: ");
+				Notify( Request.Create(RequestEnum.CreateUser, Console.ReadLine()) );
 				break;
-		} */
+			}
+			Console.WriteLine("User already exists");
+		}
 	}
 
 	public void DisplayAssignmentResult(AssignmentResult result){
