@@ -35,10 +35,10 @@ public interface IAssignment{
 	void RemoveTest(string testName);
 }
 
+// TODO static class at least partially? for Create, Add, RunTests ...
 public class Assignment : IAssignment{
 	public List<string> testNames;
 	public string Name;
-	public int PointsTotal = 0;
 
 	public AssignmentResult Result;
 

@@ -26,10 +26,16 @@ public abstract class User{
 
 	// TODO use events
 	public void ClientLoop(){
-		/*
 		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
-		transfer.Send( new Response<CustomFile> {Data = c} );
-
+		Console.WriteLine("OK1");
+		//transfer.Send( new Response<CustomFile> {Data = c} );
+		Notify( Request.Create(RequestEnum.SubmittedSolution, c) );
+		Console.WriteLine("OK2");
+		var response = GetResponse<AssignmentResult>();
+		Console.WriteLine("OK3");
+		DisplayAssignmentResult( response.Data );
+		while(true){}
+		/*
 		while( true ){
 			var update = transfer.Receive<IRequest<object>>();
 			Console.WriteLine($"{Name}: {update.Type}");
@@ -79,8 +85,8 @@ public abstract class User{
 		}
 
 		Console.WriteLine();
-		Console.Write($"Passed: {result.CorrectTests},");
-		Console.Write($"Failed: {result.IncorrectTests},");
+		Console.Write($"Passed: {result.CorrectTests}, ");
+		Console.Write($"Failed: {result.IncorrectTests}, ");
 		Console.WriteLine($"Skipped: {result.SkippedTests}");
 		Console.WriteLine($"Points: {result.PointsTotal}");
 	}
