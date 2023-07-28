@@ -56,6 +56,12 @@ public class TcpUser : IDisposable{
 			case RequestEnum.CreateUser:
 				CreateUser(request);
 				break;
+			case RequestEnum.AssignTask:
+				AssignTask(request);
+				break;
+			case RequestEnum.CreateAssignment:
+				CreateAssignment(request);
+				break;
 		}
 	}
 
@@ -103,6 +109,26 @@ public class TcpUser : IDisposable{
 				break;
 			}
 			userName = transfer.Receive<Request<string>>().Data;
+		}
+	}
+
+	private void AssignTask(IRequest<object> request){
+		//var task = GetData<string>(request);
+		// TODO get all data from request.Data, so serialize string array or object array ...
+		//var userName = transfer.Receive<Request<string>>().Data;
+		var data = GetData<string[]>(request);
+
+		var directory = $"Data/Users/{data[0]}/{data[1]}";
+		if( !Directory.Exists(directory) ) Directory.CreateDirectory(directory);
+	}
+
+	private void CreateAssignment(IRequest<object> request){
+		// TODO update assignment class to be static
+		// TODO refactory all these methods
+		var data = transfer.Receive<Request<object[]>>().Data; //GetData<object[]>(request);
+		if( !Directory.Exists($"Data/Users/{(string)data[0]}") ){
+			Directory.CreateDirectory($"Data/Users/{(string)data[0]}");
+			File.WriteAllBytes($"Data/Users/{(string)data[0]}/README.md", (byte[])data[1]);
 		}
 	}
 

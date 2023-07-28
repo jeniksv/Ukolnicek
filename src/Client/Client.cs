@@ -26,8 +26,10 @@ public abstract class User{
 
 	// TODO use events
 	public void ClientLoop(){
-		SubmitSolution();
-		CreateUser();
+		// SubmitSolution();
+		// CreateUser();
+		// AssignTask();
+		CreateAssignment();
 		Notify( Request.Create(RequestEnum.Exit) );
 	}
 
@@ -51,6 +53,23 @@ public abstract class User{
 			}
 			Console.WriteLine("User already exists");
 		}
+	}
+
+	private void AssignTask(){
+		var userName = "Jenda";
+		var task = "Prime";
+		var data = new string[] { userName, task };
+
+		Notify( Request.Create( RequestEnum.AssignTask, data) );
+	}
+
+	private void CreateAssignment(){
+		// for tests
+		var assignmentName = "Palindrome";
+		var file = new CustomFile("task.md", File.ReadAllBytes("task.md") );
+		var data = new object[] { assignmentName, file };
+
+		Notify( Request.Create( RequestEnum.AssignTask, data) );
 	}
 
 	public void DisplayAssignmentResult(AssignmentResult result){

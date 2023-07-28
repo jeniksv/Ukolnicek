@@ -2,27 +2,32 @@ using System.Diagnostics;
 
 namespace Communication;
 
-// TODO inner logic, client has notifications and server has responses ?
+/// <summary>
+///     Possible user actions.
+/// </summary>
 public enum RequestEnum{
-	SubmittedSolution,
 	Login,
-	Exit,
 	CreateUser,
+	Exit,
+
 	ShowAssignments, // List<string>
 	ShowAssignment, // zadani plus pokusy co byly List<string> + README.md
 	ShowSolution, // AssignmentResult + *.py
+	
+	SubmittedSolution,
+	
+	// admin requests
+	AssignTask, // TODO mozna AssignAll?
+
+	CreateAssignment,
+	AddTest,
+	RemoveTest,
+
 	/*
-	 * -> User student
-	 * EvalSolution
-	 * ShowMyAssignments ?
-	 * -> User admin
-	 * CreateAssignment
-	 * AddTest
-	 * DeleteTest
-	 * GetTestInfo (s tim bude prcani ale)
-	 * CreateGroup (s tim bude prcani tez)
-	 * AssignTaskToStudent
-	 * JesteNeco
+	 * -> Admin TODO
+	 * CreateGroup (s tim bude prcani tez), mozna by pak bylo fajn videt body ostatnich, vytvareni predmetu jako c# delat nebudu
+	 * UpdateStudentPoints
+	 * ShowAllStudents
 	 */
 }
 
@@ -32,7 +37,7 @@ public interface IRequest<out T>{
 }
 
 /// <summary>
-///     Generic notification for communication.
+///     Generic user request for communication with server.
 /// </summary>
 public readonly struct Request<T> : IRequest<object>{
 	public RequestEnum Type { get; }

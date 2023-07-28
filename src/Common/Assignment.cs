@@ -36,6 +36,7 @@ public interface IAssignment{
 }
 
 // TODO static class at least partially? for Create, Add, RunTests ...
+// yes i think it is bullshit it should be static
 public class Assignment : IAssignment{
 	public List<string> testNames;
 	public string Name;
