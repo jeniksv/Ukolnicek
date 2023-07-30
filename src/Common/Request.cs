@@ -59,3 +59,5 @@ public static class Request{
 
 	public static Request<T> Create<T>(RequestEnum type, T data) => new Request<T>(type, data);
 }
+
+// TODO create request data type

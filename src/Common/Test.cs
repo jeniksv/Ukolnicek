@@ -10,7 +10,7 @@ namespace Testing;
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
-public readonly struct TestLog{ // TODO properties
+public readonly struct TestLog{
 	public readonly string Name { get; }
 	public readonly int ExitCode { get; }
 	public readonly TestResult Result { get; }
@@ -43,12 +43,20 @@ public class Test{
 	private ProcessStartInfo SetProcessStartInfo(string programName){
 		var startInfo = new ProcessStartInfo();
 		startInfo.FileName = "python3";
-		startInfo.Arguments = programName;
-		// TODO handle arguments better;
+		startInfo.ArgumentList.Add(programName);
 		startInfo.UseShellExecute = false;
 		startInfo.RedirectStandardError = true;
 		startInfo.RedirectStandardOutput = true;
-		if( inputFileName ) startInfo.RedirectStandardInput = true;
+		
+		if( inputFileName ){
+			startInfo.RedirectStandardInput = true;
+		}
+
+		if( commandLineArguments ){
+			foreach(var arg in File.ReadAllText($"{Name}/args").Split()){
+				startInfo.ArgumentList.Add(arg);
+			}
+		}
 
 		return startInfo;
 	}
@@ -115,7 +123,6 @@ public class Test{
 			string stderr = process.StandardError.ReadToEnd();
 			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
-			// TODO save TestLog in users directory
 			Log = new TestLog(Name, exitCode, result, stdout, stderr, points);
 		}
 

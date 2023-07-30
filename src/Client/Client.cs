@@ -26,10 +26,10 @@ public abstract class User{
 
 	// TODO use events
 	public void ClientLoop(){
-		// SubmitSolution();
+		SubmitSolution();
 		// CreateUser();
 		// AssignTask();
-		CreateAssignment();
+		// CreateAssignment();
 		Notify( Request.Create(RequestEnum.Exit) );
 	}
 
@@ -64,12 +64,17 @@ public abstract class User{
 	}
 
 	private void CreateAssignment(){
-		// for tests
 		var assignmentName = "Palindrome";
-		var file = new CustomFile("task.md", File.ReadAllBytes("task.md") );
+		var file = File.ReadAllBytes("task.md");
 		var data = new object[] { assignmentName, file };
+		Notify( Request.Create( RequestEnum.CreateAssignment, data) ); // TODO proc to nejde castit z object[]
+	}
 
-		Notify( Request.Create( RequestEnum.AssignTask, data) );
+	private void AddTest(){
+		var assignmentName = "Palindrome";
+		var input = File.ReadAllBytes("in");
+		var output = File.ReadAllBytes("out");
+		var args = File.ReadAllBytes("args");
 	}
 
 	public void DisplayAssignmentResult(AssignmentResult result){

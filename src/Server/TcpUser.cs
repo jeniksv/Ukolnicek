@@ -9,6 +9,7 @@ namespace AppServer;
 
 // TODO mutexes for admin operations
 // TODO cache created assignments etc
+// TODO where communication is not needed ()
 public class TcpUser : IDisposable{
         private readonly IObjectTransfer transfer;
 	public string Name;
@@ -125,10 +126,10 @@ public class TcpUser : IDisposable{
 	private void CreateAssignment(IRequest<object> request){
 		// TODO update assignment class to be static
 		// TODO refactory all these methods
-		var data = transfer.Receive<Request<object[]>>().Data; //GetData<object[]>(request);
-		if( !Directory.Exists($"Data/Users/{(string)data[0]}") ){
-			Directory.CreateDirectory($"Data/Users/{(string)data[0]}");
-			File.WriteAllBytes($"Data/Users/{(string)data[0]}/README.md", (byte[])data[1]);
+		var data = GetData<object[]>(request);
+		if( !Directory.Exists($"Data/Assignments/{(string)data[0]}") ){
+			Directory.CreateDirectory($"Data/Assignments/{(string)data[0]}");
+			File.WriteAllBytes($"Data/Assignments/{(string)data[0]}/README.md", (byte[])data[1]);
 		}
 	}
 

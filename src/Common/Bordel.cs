@@ -14,3 +14,7 @@ public struct CustomFile{ // TODO change name
         }
 }
 
+public struct AssignmentCreateData{
+	public string Name { get; set; }
+	public byte[] TaskDescription { get; set; }
+}
