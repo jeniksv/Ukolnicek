@@ -13,24 +13,27 @@ namespace AppServer;
 public class TcpUser : IDisposable{
         private readonly IObjectTransfer transfer;
 	public string Name;
+	public bool IsAdmin = false;
 
         public TcpUser(TcpClient client){
                 transfer = new JsonTcpTransfer(client);
         }
 
 	private void Verification(){
+		// TODO replace with normal command, where you just send username and passwd
 		while(true){
 			Name = transfer.Receive<Request<string>>().Data;
 			var passwd = transfer.Receive<Request<string>>().Data;
 			
 			Console.WriteLine(Directory.Exists($"Data/Users/{Name}"));
+			// TODO 
 			Console.WriteLine(File.ReadAllText($"Data/Users/{Name}/passwd"));
 			var verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
 			transfer.Send( new Response<bool> {Data = verified} );
 
 			if( verified ){
-				var isAdmin = true;
-				transfer.Send( new Response<bool> { Data = File.Exists($"Data/Users/{Name}/admin") } );
+				IsAdmin = File.Exists($"Data/Users/{Name}/admin");
+				transfer.Send( new Response<bool> { Data = IsAdmin } );
 				break;
 			}
 		}
@@ -63,6 +66,15 @@ public class TcpUser : IDisposable{
 			case RequestEnum.CreateAssignment:
 				CreateAssignment(request);
 				break;
+			case RequestEnum.ShowAssignment:
+				ShowAssignment(request);
+				break;
+			case RequestEnum.ShowAssignments:
+				ShowAssignments(request);
+				break;
+			//case RequestEnum.ShowSolution:
+			//	ShowSolution(request);
+			//	break;
 		}
 	}
 
@@ -129,9 +141,45 @@ public class TcpUser : IDisposable{
 		var data = GetData<object[]>(request);
 		if( !Directory.Exists($"Data/Assignments/{(string)data[0]}") ){
 			Directory.CreateDirectory($"Data/Assignments/{(string)data[0]}");
-			File.WriteAllBytes($"Data/Assignments/{(string)data[0]}/README.md", (byte[])data[1]);
+			// File.WriteAllBytes($"Data/Assignments/{(string)data[0]}/README.md", (byte[])data[1]);
 		}
 	}
+
+	private void AddTaskDescription(IRequest<object> request){
+		// TODO
+		// Assignment.AddTaskDescription();
+	}
+
+	private void AddTest(IRequest<object> request){
+	}
+
+	private void ShowAssignments(IRequest<object> request){
+		string[] assignments;
+		if( IsAdmin ){
+			assignments = Directory.GetDirectories($"Data/Assignments/");
+		} else{
+			// TODO admin should have all assignments in your directory
+			assignments = Directory.GetDirectories($"Data/Users/{Name}");
+		}
+
+		transfer.Send( new Response<string[]> {Data = assignments} );
+	}
+
+	private void ShowAssignment(IRequest<object> request){
+		// TODO repair for user
+		// TODO send taskDescription as bytes?
+		var assignmentName = GetData<string>(request);
+		var taskDescription = Assignment.GetTaskDescription(assignmentName);
+		var temp = new List<string>() { taskDescription };
+
+		foreach(var d in Directory.GetDirectories($"Data/Users/{Name}/{assignmentName}")){
+			temp.Add(d);
+		}
+		
+		transfer.Send( new Response<string[]> {Data = temp.ToArray()} );
+	}
+
+
 
 	private T GetData<T>(IRequest<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));

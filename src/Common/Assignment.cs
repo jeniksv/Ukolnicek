@@ -37,6 +37,8 @@ public interface IAssignment{
 
 // TODO static class at least partially? for Create, Add, RunTests ...
 // yes i think it is bullshit it should be static
+
+
 public class Assignment : IAssignment{
 	public List<string> testNames;
 	public string Name;
@@ -65,8 +67,25 @@ public class Assignment : IAssignment{
 		return !name.StartsWith($"Data/Assignments/") ? $"Data/Assignments/{name}" : name;
 	}
 
-	public void AddTask(FileInfo task){
-		task.MoveTo($"{Name}/README.md");
+	public static void Create(string assignmentName){
+		assignmentName = GetFullAssignmentName(assignmentName);
+		if( !Exists(assignmentName) ) Directory.CreateDirectory($"{assignmentName}");
+	}
+
+	// TODO task description return as byte[]?
+	public static string GetTaskDescription(string assignmentName){
+		assignmentName = GetFullAssignmentName(assignmentName);
+		return File.ReadAllText($"{assignmentName}/README.md");
+	}
+
+	public static void AddTaskDescription(string assignmentName, byte[] contents){
+		assignmentName = GetFullAssignmentName(assignmentName);
+		File.WriteAllBytes($"{assignmentName}/README.md", contents);
+	}
+
+	public static void RemoveTaskDescription(string assignmentName){
+		assignmentName = GetFullAssignmentName(assignmentName);
+		if( File.Exists($"{assignmentName}/README.md") ) File.Delete($"{assignmentName}/README.md");
 	}
 
 	public static void Delete(string name){

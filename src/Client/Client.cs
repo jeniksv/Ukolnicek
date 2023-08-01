@@ -14,33 +14,31 @@ public abstract class User{
 	public int Id;
 	protected IObjectTransfer transfer;
 
-	// TODO change client server logic
 	public User(string name, IObjectTransfer t){
 		Name = name;
 		transfer = t; 
-		/*
-		Id = transfer.Receive<Request<int>>().Data;
-		transfer.Send( new Response<string> {Data = name} );
-		*/
 	}
 
 	// TODO use events
 	public void ClientLoop(){
-		SubmitSolution();
+		//SubmitSolution();
 		// CreateUser();
 		// AssignTask();
 		// CreateAssignment();
+		ShowAssignments();
+		ShowAssignment("Prime");
 		Notify( Request.Create(RequestEnum.Exit) );
 	}
 
-	private void SubmitSolution(){
+	// TODO extract name from path
+	public void SubmitSolution(){
 		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
 		Notify( Request.Create(RequestEnum.SubmittedSolution, c) );
 		var response = GetResponse<AssignmentResult>();
 		DisplayAssignmentResult( response.Data );
 	}
 
-	private void CreateUser(){
+	public void CreateUser(){
 		while(true){
 			Console.Write("Enter username: ");
 			Notify( Request.Create(RequestEnum.CreateUser, Console.ReadLine()) );
@@ -55,7 +53,7 @@ public abstract class User{
 		}
 	}
 
-	private void AssignTask(){
+	public void AssignTask(){
 		var userName = "Jenda";
 		var task = "Prime";
 		var data = new string[] { userName, task };
@@ -63,18 +61,45 @@ public abstract class User{
 		Notify( Request.Create( RequestEnum.AssignTask, data) );
 	}
 
-	private void CreateAssignment(){
+	public void CreateAssignment(){
 		var assignmentName = "Palindrome";
 		var file = File.ReadAllBytes("task.md");
 		var data = new object[] { assignmentName, file };
-		Notify( Request.Create( RequestEnum.CreateAssignment, data) ); // TODO proc to nejde castit z object[]
+		Notify( Request.Create( RequestEnum.CreateAssignment, data) );
 	}
 
-	private void AddTest(){
+	public void AddTest(){
 		var assignmentName = "Palindrome";
-		var input = File.ReadAllBytes("in");
+		var input = File.Exists("in") ? File.ReadAllBytes("in") : null;
 		var output = File.ReadAllBytes("out");
-		var args = File.ReadAllBytes("args");
+		var args = File.Exists("args") ? File.ReadAllBytes("args") : null;
+	}
+
+	public void ShowAssignments(){ // TODO virtual. for admin it should show all assignments
+		Notify( Request.Create(RequestEnum.ShowAssignments) );
+		var response = GetResponse<string[]>();
+		DisplayAssignments(response.Data);
+	}
+
+	public void ShowAssignment(string assignmentName){
+		// TODO from show assignments pick one and display it
+		Notify( Request.Create(RequestEnum.ShowAssignment, assignmentName) );
+		var response = GetResponse<string[]>(); // task description, list of solutions
+		DisplayAssignment(response.Data);
+	}
+
+	public void ShowSolution(string assignmentName, string solutionName){
+		Notify( Request.Create(RequestEnum.ShowSolution, $"{assignmentName}/{solutionName}") );
+		var response = GetResponse<string[]>();
+		// DisplaySolution(); // in gui, button which can download solution
+	}
+
+	public void DisplayAssignments(string[] a){
+		foreach(var v in a ) Console.WriteLine(v);
+	}
+
+	public void DisplayAssignment(string[] a){
+		foreach(var v in a ) Console.WriteLine(v);
 	}
 
 	public void DisplayAssignmentResult(AssignmentResult result){
@@ -128,7 +153,7 @@ public abstract class User{
 ///     Factory for creating users.
 /// </summary>
 public static class Client{
-	private static string ip = "192.168.10.87";
+	private static string ip = "192.168.0.199"; //192.168.0.199
 	private static int port = 12345;
 
 	public static User Create(){

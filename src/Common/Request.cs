@@ -27,7 +27,7 @@ public enum RequestEnum{
 	 * -> Admin TODO
 	 * CreateGroup (s tim bude prcani tez), mozna by pak bylo fajn videt body ostatnich, vytvareni predmetu jako c# delat nebudu
 	 * UpdateStudentPoints
-	 * ShowAllStudents
+	 * ShowStudents
 	 */
 }
 
