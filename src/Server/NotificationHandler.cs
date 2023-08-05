@@ -1,4 +1,4 @@
-using Testing;
+using Ukolnicek.Testing;
 
 // why static?
 // just need to

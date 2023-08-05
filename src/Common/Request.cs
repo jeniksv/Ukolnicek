@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Communication;
+namespace Ukolnicek.Communication;
 
 /// <summary>
 ///     Possible user actions.

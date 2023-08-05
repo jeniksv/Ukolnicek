@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Communication;
-using Testing;
+using Ukolnicek.Communication;
+using Ukolnicek.Testing;
 
 namespace AppServer; 
 

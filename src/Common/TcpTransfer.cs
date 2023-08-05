@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Communication;
+namespace Ukolnicek.Communication;
 
 public interface IObjectTransfer : IDisposable{
 	void Send<T>(T item);

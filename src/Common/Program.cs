@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Testing;
-using Communication;
+using Ukolnicek.Testing;
+using Ukolnicek.Communication;
 
 /*
 var task = new FileInfo("task.md");

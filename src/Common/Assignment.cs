@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Testing;
+namespace Ukolnicek.Testing;
 
 public struct AssignmentResult{
 	public List<TestLog> TestLogs { get; set; }

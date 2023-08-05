@@ -16,7 +16,8 @@ files=( "Common/Assignment.cs" \
 	"Client/Program.cs" \
        	"Client/Client.cs" \
 	"Client/Admin.cs" \
-	"Client/Student.cs")
+	"Client/Student.cs" \
+	"Client/UserInterface.cs")
 
 total_size=0
 

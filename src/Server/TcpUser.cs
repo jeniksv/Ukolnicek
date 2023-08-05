@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Communication;
-using Testing;
+using Ukolnicek.Communication;
+using Ukolnicek.Testing;
 using Newtonsoft.Json;
 
 namespace AppServer;
@@ -19,29 +19,20 @@ public class TcpUser : IDisposable{
                 transfer = new JsonTcpTransfer(client);
         }
 
-	private void Verification(){
-		// TODO replace with normal command, where you just send username and passwd
-		while(true){
-			Name = transfer.Receive<Request<string>>().Data;
-			var passwd = transfer.Receive<Request<string>>().Data;
-			
-			Console.WriteLine(Directory.Exists($"Data/Users/{Name}"));
-			// TODO 
-			Console.WriteLine(File.ReadAllText($"Data/Users/{Name}/passwd"));
-			var verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
-			transfer.Send( new Response<bool> {Data = verified} );
+	private void Verification(IRequest<object> request){
+		var login = GetData<string[]>(request);
+		Name = login[0];
+		string passwd = login[1];
 
-			if( verified ){
-				IsAdmin = File.Exists($"Data/Users/{Name}/admin");
-				transfer.Send( new Response<bool> { Data = IsAdmin } );
-				break;
-			}
-		}
-	}
+		bool verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
+
+		int response = verified ? (File.Exists($"Data/Users/{Name}/admin") ? 2 : 1) : 0;
+
+		transfer.Send( new Response<int> {Data = response} );
+		// response is int -> 0 - not verified, 1 - verified students account, 2 - verified admins account
+	} 
 
 	public void ClientLoop(){
-		Verification();
-		
 		while( true ){
 			var request = transfer.Receive<IRequest<object>>(); // TODO handle end of transfer
 			
@@ -54,6 +45,9 @@ public class TcpUser : IDisposable{
 
 	public void HandleRequest(IRequest<object> request){
 		switch(request.Type){
+			case RequestEnum.Login:
+				Verification(request);
+				break;
 			case RequestEnum.SubmittedSolution:
 				SubmittedSolution(request);
 				break;
@@ -77,8 +71,6 @@ public class TcpUser : IDisposable{
 			//	break;
 		}
 	}
-
-	private string currentAssignment = "";
 
 	// TODO create static class Action -> Action.HandleSubmittedSolution -> return type should be send then
 	// but i do not want to pass transfer object somewhere else
@@ -110,7 +102,7 @@ public class TcpUser : IDisposable{
 	}
 
 	private void CreateUser(IRequest<object> request){
-		// TODO je to chlupaty jak opice ale na refaktoring zatim neni cas
+		// TODO zase data v requestu a vracim true kdyz uspech a false kdyz neuspech
 		var userName = GetData<string>(request);
 		while(true){
 			var correctUserName = !Directory.Exists($"Data/Users/{userName}");

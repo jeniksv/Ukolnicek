@@ -1,4 +1,4 @@
-namespace Communication;
+namespace Ukolnicek.Communication;
 
 public struct CustomFile{ // TODO change name
         public string Name { get; set; }

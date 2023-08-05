@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Testing;
+namespace Ukolnicek.Testing;
 
 // TODO interface for test, so we can have more implementations of test like unittest based or program based
 // maybe Assignment should be more generic then test
