@@ -3,6 +3,9 @@ using Ukolnicek.Communication;
 namespace Ukolnicek.Client;
 
 public class ConsoleUI : IUserInterface {
+	public string Username { get; set; }
+	public string[] CommandOptions { get; set; }
+
 	public string GetUsername(){
 		return Console.ReadLine()!;
 	}
@@ -25,10 +28,8 @@ public class ConsoleUI : IUserInterface {
 
 			if( key.Key != ConsoleKey.Backspace ){
 				password += key.KeyChar;
-				//Console.Write("*");
 			} else if( password.Length > 0 ){
 				password = password.Remove(password.Length - 1);
-				//Console.Write("\b \b");
 			}
 		}
 	}
@@ -41,7 +42,7 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("Permission denied, please try again.");
 	}
 
-	private List<string> MatchOptions(string prefix, string[] options){
+	private string TabMatch(string prefix, string[] options){
 		var result = new List<string>();
 
 		foreach(var option in options){
@@ -50,7 +51,59 @@ public class ConsoleUI : IUserInterface {
 			}
 		}
 
-		return result;
+		if( result.Count == 0 ){
+			return prefix;
+		}
+		
+		if( result.Count == 1 ){
+			for(int i=0; i<prefix.Length; i++){
+				Console.Write("\b \b");
+			}
+
+			Console.Write(result[0]);
+			
+			return result[0];
+		}
+
+		Console.WriteLine();
+
+		foreach(var command in result){
+			Console.Write($"{command} ");
+		}
+
+		Console.WriteLine();
+		ShowPrompt();
+		prefix = LongestCommonPrefix(result);
+		Console.Write(prefix);
+		return prefix;
+	}
+
+	private string LongestCommonPrefix(List<string> commands){
+		commands.Sort();
+		var first = commands[0];
+		var last = commands[^1];
+
+		for(int i=0; i < Math.Min(first.Length, last.Length); i++){
+			if( first[i] != last[i] ){
+				return first.Substring(0, i);
+			}
+		}
+
+		return first.Substring(0, Math.Min(first.Length, last.Length));
+	}
+
+	private void ShowPrompt(){
+		Console.Write($"{Username} > ");
+	}
+
+	private string DeleteChar(string command){
+		if( command.Length > 0 ){
+			command = command.Remove(command.Length - 1);
+			Console.Write("\b \b");
+			return command;
+		}
+
+		return "";
 	}
 
 	public RequestEnum GetCommand(string username){
@@ -60,14 +113,12 @@ public class ConsoleUI : IUserInterface {
 			"show-solution",
 			"create-assignment",
 			"create-test",
-			"baa",
-			"cccccccccccc"
 		};
 
 		string command = "";
 		ConsoleKeyInfo key;
 
-		ShowPrompt(username);
+		ShowPrompt();
 		
 		while( true ){
 			key = Console.ReadKey(true);
@@ -77,36 +128,14 @@ public class ConsoleUI : IUserInterface {
 			}
 
 			if( key.Key == ConsoleKey.Tab ){
-				var result = MatchOptions(command, commands);
-				if( result.Count == 1 ){
-					for(int i=0; i<command.Length; i++) Console.Write("\b \b");
-					command = result[0];
-					Console.Write(command);
-				}
-				if( result.Count > 1 ){
-					Console.WriteLine();
-					foreach(string s in result){
-						Console.WriteLine(s);
-					}
-					ShowPrompt(username);
-					// TODO command = longest common prefix of strings in result
-					Console.Write(command);
-				}
+				command = TabMatch(command, commands);
 			} else if( key.Key == ConsoleKey.Backspace ){
-				if( command.Length > 0 ){
-					command = command.Remove(command.Length - 1);
-					Console.Write("\b \b");
-				}
+				command = DeleteChar(command);
 			} else {
 				command += key.KeyChar;
 				Console.Write(key.KeyChar);
 			}
 		}
-	}
-
-	private void ShowPrompt(string name){
-		// TODO change color?
-		Console.Write($"{name} > ");
 	}
 
 	public void ShowSolution(){
