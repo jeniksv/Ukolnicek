@@ -13,7 +13,7 @@ public interface IUserInterface {
 	
 	string GetUsername();
 	string GetPassword();
-	
-	RequestEnum GetCommand();
+
+	RequestEnum GetCommand(string username);
 }
 

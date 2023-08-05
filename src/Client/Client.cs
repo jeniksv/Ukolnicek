@@ -13,11 +13,12 @@ public abstract class User{
 	public string Name;
 	public int Id;
 	protected IObjectTransfer transfer;
-	// private IUserInterface userInterface;
+	private IUserInterface ui;
 
 	public User(string name, IObjectTransfer t){
 		Name = name;
-		transfer = t; 
+		transfer = t;
+		ui = new ConsoleUI();
 	}
 
 	public void ClientLoop(){
@@ -28,21 +29,21 @@ public abstract class User{
 		// TODO async method for creating tasks -> submitted solution, i can 
 		bool b = true;
 		while( b ){
-			//var command = userInterface.GetCommand();
-			Console.Write($"{Name} > ");
-			var command = Console.ReadLine()[0];
+			//var command = Console.ReadLine()[0];
+			var command = ui.GetCommand(Name);
 
 			switch( command ){
-				case 'a':
+				case RequestEnum.ShowAssignments:
 					ShowAssignments();
 					break;
-				case 'b':
+				case RequestEnum.ShowAssignment:
 					ShowAssignment("Prime");
 					break;
-				case 'c':
+				case RequestEnum.SubmittedSolution:
 					SubmitSolution();
 					break;
-				case 'd':
+				case RequestEnum.Exit:
+					Notify( Request.Create(RequestEnum.Exit) );
 					b = false;
 					break;
 			}
@@ -50,7 +51,6 @@ public abstract class User{
 
 		//ShowAssignments();
 		//ShowAssignment("Prime");
-		Notify( Request.Create(RequestEnum.Exit) );
 	}
 
 	// TODO extract name from path
