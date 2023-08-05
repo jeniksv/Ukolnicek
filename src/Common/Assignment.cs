@@ -111,6 +111,8 @@ public class Assignment : IAssignment{
 		var temp = new List<TestLog>();
 
 		foreach(var test in tests){
+			var t = test.Run(programName);
+			Console.WriteLine(t.Result);
 			temp.Add( test.Run(programName) );
 		}
 

@@ -1,11 +1,12 @@
 using Ukolnicek.Communication;
+using Ukolnicek.Testing;
 
 namespace Ukolnicek.Client;
 
 public interface IUserInterface {
-	//void ShowAssignment();
-	//void ShowAssignments();
-	void ShowSolution();
+	// void ShowAssignment();
+	void ShowAssignments(string[] assignments);
+	void ShowSolution(AssignmentResult result);
 
 	void AskUsername();
 	void AskPassword();
@@ -14,6 +15,6 @@ public interface IUserInterface {
 	string GetUsername();
 	string GetPassword();
 
-	RequestEnum GetCommand(string username);
+	RequestEnum GetCommand(out string[] args);
 }
 

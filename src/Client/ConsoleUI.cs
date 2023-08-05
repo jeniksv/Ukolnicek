@@ -1,4 +1,6 @@
+using System.IO;
 using Ukolnicek.Communication;
+using Ukolnicek.Testing;
 
 namespace Ukolnicek.Client;
 
@@ -42,12 +44,12 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("Permission denied, please try again.");
 	}
 
-	private string TabMatch(string prefix, string[] options){
+	private string TabMatch(string prefix, Dictionary<string, RequestEnum> options){
 		var result = new List<string>();
 
-		foreach(var option in options){
-			if( option.StartsWith(prefix) ){
-				result.Add(option);
+		foreach(var pair in options){
+			if( pair.Key.StartsWith(prefix) ){
+				result.Add(pair.Key);
 			}
 		}
 
@@ -106,13 +108,28 @@ public class ConsoleUI : IUserInterface {
 		return "";
 	}
 
-	public RequestEnum GetCommand(string username){
-		var commands = new string[] {
-			"show-assignment",
-			"show-assignments",
-			"show-solution",
-			"create-assignment",
-			"create-test",
+	private void HelpCommand(){
+		// TODO command options diff for admin
+		Console.WriteLine("show-assignment [assignment name]");
+		Console.WriteLine("show-assignments");
+		Console.WriteLine("show-solution [assignment name] [solution name]");
+		Console.WriteLine("add-assignment [assignment name]");
+		Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
+		Console.WriteLine("add-task-description [assignment name] [file]");
+		Console.WriteLine("submit-solution [assignment name] [file]");
+		Console.WriteLine("exit");
+	}
+
+	public RequestEnum GetCommand(out string[] args){
+		var commands = new Dictionary<string, RequestEnum> {
+			{"show-assignment", RequestEnum.ShowAssignment},
+			{"show-assignments", RequestEnum.ShowAssignments},
+			{"show-solution", RequestEnum.ShowSolution},
+			{"submit-solution", RequestEnum.SubmittedSolution},
+			{"add-assignment", RequestEnum.CreateAssignment},
+			{"add-test", RequestEnum.AddTest},
+			{"add-task-description", RequestEnum.AddTaskDescription},
+			{"exit", RequestEnum.Exit},
 		};
 
 		string command = "";
@@ -124,7 +141,19 @@ public class ConsoleUI : IUserInterface {
 			key = Console.ReadKey(true);
 			if( key.Key == ConsoleKey.Enter ){
 				Console.WriteLine();
-				return RequestEnum.Exit;
+				var commandSplit = command.Split();
+				var request = commandSplit[0];
+				// TODO check for valid arguments
+				args = new string[commandSplit.Length - 1];
+				Array.Copy(commandSplit, 1, args, 0, commandSplit.Length - 1);
+					
+				if( commands.ContainsKey(request) ){
+					return commands[request];
+				} else {
+					if( request == "help" ) HelpCommand();
+					else if(request != "" ) Console.WriteLine("Invalid command");
+					return GetCommand(out args);
+				}
 			}
 
 			if( key.Key == ConsoleKey.Tab ){
@@ -138,7 +167,47 @@ public class ConsoleUI : IUserInterface {
 		}
 	}
 
-	public void ShowSolution(){
+	private string ExtractName(string name){
+		return Path.GetFileName(name);
+	}
+
+	public void ShowSolution(AssignmentResult result){
+		foreach(var testLog in result.TestLogs){
+			Console.Write($"Test: {ExtractName(testLog.Name)}");
 			
+			if( testLog.Result == TestResult.Correct ){
+				Console.WriteLine(" ... OK");
+				continue;
+			}
+
+			Console.WriteLine(" ... FAILED");
+
+			if( testLog.Result == TestResult.OutputMismatch ){
+				Console.WriteLine("Stdout actual:");
+				Console.WriteLine($"{testLog.Stdout}");
+				Console.WriteLine($"Stdou expected:");
+				continue;
+			}
+
+			if( testLog.Result == TestResult.TimeExceeded ){
+				Console.WriteLine("Time exceeded");
+				continue;
+			}
+
+			Console.WriteLine("Stderr:");
+			Console.WriteLine($"{testLog.Stderr}");
+		}
+
+		Console.WriteLine();
+		Console.Write($"Passed: {result.CorrectTests}, ");
+		Console.Write($"Failed: {result.IncorrectTests}, ");
+		Console.WriteLine($"Skipped: {result.SkippedTests}");
+		Console.WriteLine($"Points: {result.PointsTotal}");
+	}
+
+	public void ShowAssignments(string[] assignments){
+		foreach(var a in assignments){
+			Console.WriteLine($"{ExtractName(a)}");
+		}
 	}
 }

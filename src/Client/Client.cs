@@ -22,17 +22,10 @@ public abstract class User{
 	}
 
 	public void ClientLoop(){
-		// SubmitSolution();
-		// CreateUser();
-		// AssignTask();
-		// CreateAssignment();
 		// TODO async method for creating tasks -> submitted solution, i can 
 		bool b = true;
 		while( b ){
-			//var command = Console.ReadLine()[0];
-			var command = ui.GetCommand(Name);
-
-			switch( command ){
+			switch( ui.GetCommand(out string[] args) ){
 				case RequestEnum.ShowAssignments:
 					ShowAssignments();
 					break;
@@ -40,7 +33,10 @@ public abstract class User{
 					ShowAssignment("Prime");
 					break;
 				case RequestEnum.SubmittedSolution:
-					SubmitSolution();
+					SubmitSolution(args);
+					break;
+				case RequestEnum.ShowSolution:
+					ShowSolution(args);
 					break;
 				case RequestEnum.Exit:
 					Notify( Request.Create(RequestEnum.Exit) );
@@ -48,17 +44,12 @@ public abstract class User{
 					break;
 			}
 		}
-
-		//ShowAssignments();
-		//ShowAssignment("Prime");
 	}
 
-	// TODO extract name from path
-	public void SubmitSolution(){
-		var c = new CustomFile("prime.py", File.ReadAllBytes("prime.py"));
-		Notify( Request.Create(RequestEnum.SubmittedSolution, c) );
-		var response = GetResponse<AssignmentResult>();
-		DisplayAssignmentResult( response.Data );
+	public void SubmitSolution(string[] args){
+		// TODO handle invalid arguments
+		var data = new object[] {args[0], args[1], File.ReadAllBytes(args[1])};
+		Notify( Request.Create(RequestEnum.SubmittedSolution, data) );
 	}
 
 	public void CreateUser(){
@@ -101,74 +92,31 @@ public abstract class User{
 	public void ShowAssignments(){ // TODO virtual. for admin it should show all assignments
 		Notify( Request.Create(RequestEnum.ShowAssignments) );
 		var response = GetResponse<string[]>();
-		DisplayAssignments(response.Data);
+		ui.ShowAssignments(response.Data);
 	}
 
 	public void ShowAssignment(string assignmentName){
-		// TODO from show assignments pick one and display it
 		Notify( Request.Create(RequestEnum.ShowAssignment, assignmentName) );
 		var response = GetResponse<string[]>(); // task description, list of solutions
 		DisplayAssignment(response.Data);
 	}
 
-	public void ShowSolution(string assignmentName, string solutionName){
-		Notify( Request.Create(RequestEnum.ShowSolution, $"{assignmentName}/{solutionName}") );
-		var response = GetResponse<string[]>();
-		// DisplaySolution(); // in gui, button which can download solution
-	}
-
-	public void DisplayAssignments(string[] a){
-		foreach(var v in a ) Console.WriteLine(v);
+	public void ShowSolution(string[] args){
+		Notify( Request.Create(RequestEnum.ShowSolution, $"{args[0]}/{args[1]}") );
+		var response = GetResponse<AssignmentResult>();
+		ui.ShowSolution(response.Data);
 	}
 
 	public void DisplayAssignment(string[] a){
 		foreach(var v in a ) Console.WriteLine(v);
 	}
 
-	public void DisplayAssignmentResult(AssignmentResult result){
-		foreach(var testLog in result.TestLogs){
-			Console.Write($"Test: {testLog.Name}");
-
-			if( testLog.Result == TestResult.Correct ){
-				Console.WriteLine(" ... OK");
-				continue;
-			}
-			
-			Console.WriteLine(" ... FAILED");
-
-			if( testLog.Result == TestResult.OutputMismatch ){
-				Console.WriteLine("Stdout actual:");
-				Console.WriteLine($"{testLog.Stdout}");
-				Console.WriteLine($"Stdou expected:"); // TODO also display Expected output
-				continue;
-			}
-			
-			if( testLog.Result == TestResult.TimeExceeded ){
-				Console.WriteLine("Time exceeded");
-				continue;
-			}
-			
-			Console.WriteLine("Stderr:");
-			Console.WriteLine($"{testLog.Stderr}");
-		}
-
-		Console.WriteLine();
-		Console.Write($"Passed: {result.CorrectTests}, ");
-		Console.Write($"Failed: {result.IncorrectTests}, ");
-		Console.WriteLine($"Skipped: {result.SkippedTests}");
-		Console.WriteLine($"Points: {result.PointsTotal}");
+	public IResponse<T> GetResponse<T>(){
+		return transfer.Receive<IResponse<T>>();
 	}
 
-	public IResponse<T> GetResponse<T>(){
-				return transfer.Receive<IResponse<T>>();
-		}
-
 	public void Notify<T>(IRequest<T> notification){
-				transfer.Send(notification);
-		}
-
-	private T GetData<T>(IRequest<object> update){
-		return (T)(update.Data) ?? throw new InvalidOperationException($"");
+		transfer.Send(notification);
 	}
 }
 
@@ -189,7 +137,7 @@ public static class Client{
 			var passwd = ui.GetPassword();
 
 			transfer.Send(Request.Create(RequestEnum.Login, new string[] {name, passwd}));
-			
+		
 			var verified = transfer.Receive<IResponse<int>>().Data;
 
 			if( verified > 0 ) return verified == 1 ? new Student(name, transfer) : new Admin(name, transfer);

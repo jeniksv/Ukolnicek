@@ -17,15 +17,16 @@ public enum RequestEnum{
 	SubmittedSolution,
 	
 	// admin requests
-	AssignTask, // TODO mozna AssignAll?
+	AssignTask, // TODO mozna AssignAll, to bude v klidu
 
 	CreateAssignment,
 	AddTest,
+	AddTaskDescription,
 	RemoveTest,
 
 	/*
 	 * -> Admin TODO
-	 * CreateGroup (s tim bude prcani tez), mozna by pak bylo fajn videt body ostatnich, vytvareni predmetu jako c# delat nebudu
+	 * CreateGroup 
 	 * UpdateStudentPoints
 	 * ShowStudents
 	 */

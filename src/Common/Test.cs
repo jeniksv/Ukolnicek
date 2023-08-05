@@ -17,14 +17,16 @@ public readonly struct TestLog{
 	public readonly string Stdout { get; }
 	public readonly string Stderr { get; }
 	public readonly int Points { get; }
+	public readonly int MaxPoints { get; }
 
-	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points){
+	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points, int maxPoints){
 		Name = name;
 		ExitCode = exitCode;
 		Result = result;
 		Stdout = stdout;
 		Stderr = stderr;
 		Points = points;
+		MaxPoints = maxPoints;
 	}
 }
 
@@ -38,7 +40,7 @@ public class Test{
 	private bool expectedOutputFileName => File.Exists($"{Name}/out"); // name of file is always out
 
 	[JsonIgnore]
-	public TestLog? Log;
+	public TestLog Log;
 
 	private ProcessStartInfo SetProcessStartInfo(string programName){
 		var startInfo = new ProcessStartInfo();
@@ -123,7 +125,7 @@ public class Test{
 			string stderr = process.StandardError.ReadToEnd();
 			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
-			Log = new TestLog(Name, exitCode, result, stdout, stderr, points);
+			Log = new TestLog(Name, exitCode, result, stdout, stderr, points, maxPoints);
 		}
 
 		return (TestLog)Log;

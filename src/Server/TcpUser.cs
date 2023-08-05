@@ -4,20 +4,21 @@ using System.Text;
 using Ukolnicek.Communication;
 using Ukolnicek.Testing;
 using Newtonsoft.Json;
+//using System.Text.Json;
+//using System.Text.Json.Serialization;
 
 namespace AppServer;
 
 // TODO mutexes for admin operations
 // TODO cache created assignments etc
-// TODO where communication is not needed ()
 public class TcpUser : IDisposable{
-        private readonly IObjectTransfer transfer;
-	public string Name;
-	public bool IsAdmin = false;
+	public string Name { get; set; }
+	private readonly IObjectTransfer transfer;
+	private bool isAdmin = false;
 
-        public TcpUser(TcpClient client){
-                transfer = new JsonTcpTransfer(client);
-        }
+	public TcpUser(TcpClient client){
+		transfer = new JsonTcpTransfer(client);
+	}
 
 	private void Verification(IRequest<object> request){
 		var login = GetData<string[]>(request);
@@ -26,10 +27,12 @@ public class TcpUser : IDisposable{
 
 		bool verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
 
+		// response is int where 0 - not verified, 1 - verified students account, 2 - verified admins account
 		int response = verified ? (File.Exists($"Data/Users/{Name}/admin") ? 2 : 1) : 0;
 
+		isAdmin = response == 2;
+
 		transfer.Send( new Response<int> {Data = response} );
-		// response is int -> 0 - not verified, 1 - verified students account, 2 - verified admins account
 	} 
 
 	public void ClientLoop(){
@@ -38,7 +41,8 @@ public class TcpUser : IDisposable{
 			
 			if(request.Type == RequestEnum.Exit) break;
 
-			Console.WriteLine($"{Name} - {request.Type}");
+			if(request.Type != RequestEnum.Login) Console.WriteLine($"{Name} - {request.Type}");
+			
 			HandleRequest(request);
 		}
 	}
@@ -66,9 +70,9 @@ public class TcpUser : IDisposable{
 			case RequestEnum.ShowAssignments:
 				ShowAssignments(request);
 				break;
-			//case RequestEnum.ShowSolution:
-			//	ShowSolution(request);
-			//	break;
+			case RequestEnum.ShowSolution:
+				ShowSolution(request);
+				break;
 		}
 	}
 
@@ -88,17 +92,22 @@ public class TcpUser : IDisposable{
 	}
 
 	private void SubmittedSolution(IRequest<object> request){
-		var assignmentName = "Prime";
-		var file = GetData<CustomFile>(request);
-		file.Save();
+		var data = GetData<object[]>(request);
+		
+		var assignmentName = (string)data[0];
+		var fileName = (string)data[1];
+		File.WriteAllBytes(fileName, (byte[])data[2]);
+		
 		IAssignment a = new Assignment(assignmentName);
-		var result = a.RunTests(file.Name);
-		transfer.Send( new Response<AssignmentResult> {Data = result} );
-		var solutionName = SolutionName(assignmentName);	
+		var result = a.RunTests(fileName);
+		//transfer.Send( new Response<AssignmentResult> {Data = result} );
+		var solutionName = SolutionName(assignmentName);
+		
 		Directory.CreateDirectory($"Data/Users/{Name}/{assignmentName}/{solutionName}");
-		File.Move(file.Name, $"Data/Users/{Name}/{assignmentName}/{solutionName}/{file.Name}");
+		File.Move(fileName, $"Data/Users/{Name}/{assignmentName}/{solutionName}/{fileName}");
+
 		var json = JsonConvert.SerializeObject(result);
-		File.WriteAllText($"Data/Users/{Name}/{assignmentName}/{solutionName}/result", json);
+		File.WriteAllText($"Data/Users/{Name}/{assignmentName}/{solutionName}/result.json", json);
 	}
 
 	private void CreateUser(IRequest<object> request){
@@ -147,7 +156,7 @@ public class TcpUser : IDisposable{
 
 	private void ShowAssignments(IRequest<object> request){
 		string[] assignments;
-		if( IsAdmin ){
+		if( isAdmin ){
 			assignments = Directory.GetDirectories($"Data/Assignments/");
 		} else{
 			// TODO admin should have all assignments in your directory
@@ -171,14 +180,20 @@ public class TcpUser : IDisposable{
 		transfer.Send( new Response<string[]> {Data = temp.ToArray()} );
 	}
 
+	private void ShowSolution(IRequest<object> request){
+		var solutionName = GetData<string>(request);
+		var json = File.ReadAllText($"Data/Users/{Name}/{solutionName}/result.json");
+		var assignmentResult = JsonConvert.DeserializeObject<AssignmentResult>(json);
+		transfer.Send( new Response<AssignmentResult> { Data = assignmentResult } );	
+	}
 
 
 	private T GetData<T>(IRequest<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));
 	}
 
-        public void Dispose(){
-                transfer.Dispose();
-        }
+	public void Dispose(){
+		transfer.Dispose();
+	}
 }
 
