@@ -30,7 +30,7 @@ done
 
 total_size_human=$(echo "$total_size" | numfmt --to=iec)
 
-echo "Total size: $total_size_human"
+echo "size: $total_size_human"
 
 total_lines=0
 
@@ -39,4 +39,4 @@ for file in "${files[@]}"; do
     total_lines=$((total_lines + lines))
 done
 
-echo "Total lines: $total_lines"
+echo "lines: $total_lines"

@@ -6,7 +6,6 @@ namespace Ukolnicek.Client;
 public interface IUserInterface {
 	void MainLoop();
 
-	
 	void ShowAssignment(string[] assignment);
 	void ShowAssignments(string[] assignments);
 	void ShowSolution(AssignmentResult result);

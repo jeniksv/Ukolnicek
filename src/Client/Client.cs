@@ -81,9 +81,6 @@ public abstract class User : IDisposable{
 		Notify( Request.Create(RequestEnum.AddSolution, data) );
 	}
 
-	public void CreateUser(){
-	}
-
 	public void AssignTask(string[] args){
 		if( args.Length < 2 ){
 			return;

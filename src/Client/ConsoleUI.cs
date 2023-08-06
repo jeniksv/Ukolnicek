@@ -5,16 +5,38 @@ using Ukolnicek.Testing;
 namespace Ukolnicek.Client;
 
 public class ConsoleUI : IUserInterface {
-	public Dictionary<string, RequestEnum> CommandOptions { get; set; }
+	private Dictionary<string, RequestEnum> commandOptions;
 	private User user;
 
-	public ConsoleUI(){}
+	public ConsoleUI(){
+		commandOptions = new Dictionary<string, RequestEnum> {
+			{"show-assignment", RequestEnum.ShowAssignment},
+			{"show-assignments", RequestEnum.ShowAssignments},
+			{"show-solution", RequestEnum.ShowSolution},
+			{"show-task-description", RequestEnum.ShowTaskDescription},
+			{"add-solution", RequestEnum.AddSolution},
+			{"exit", RequestEnum.Exit},
+		};
+	}
 
 	public void SetUser(User u){
 		user = u;
 
+		var adminOptions = new Dictionary<string, RequestEnum> {
+                        {"add-assignment", RequestEnum.AddAssignment},
+                        {"add-test", RequestEnum.AddTest},
+                        {"add-task-description", RequestEnum.AddTaskDescription},
+                        {"remove-assignment", RequestEnum.RemoveAssignment},
+                        {"remove-test", RequestEnum.RemoveTest},
+                        {"remove-task-description", RequestEnum.RemoveTaskDescription},
+                        {"assign-task", RequestEnum.AssignTask},
+                        {"unassign-task", RequestEnum.UnassignTask},
+		};
+
 		if(user is Admin){
-			
+			foreach(var pair in adminOptions){
+				commandOptions[pair.Key] = pair.Value;
+			}	
 		}
 	}
 
@@ -88,10 +110,10 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("Permission denied, please try again.");
 	}
 
-	private string TabMatch(string prefix, Dictionary<string, RequestEnum> options){
+	private string TabMatch(string prefix){
 		var result = new List<string>();
 
-		foreach(var pair in options){
+		foreach(var pair in commandOptions){
 			if( pair.Key.StartsWith(prefix) ){
 				result.Add(pair.Key);
 			}
@@ -153,10 +175,10 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	private void HelpCommand(){
+		Console.WriteLine("exit");
 		Console.WriteLine("show-assignment [assignment name]");
 		Console.WriteLine("show-assignments");
 		Console.WriteLine("show-solution [assignment name] [solution name]");
-		Console.WriteLine("exit");
 		Console.WriteLine("add-solution [assignment name] [file]");
 
 		if(user is Admin){
@@ -174,23 +196,6 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	public RequestEnum GetCommand(out string[] args){
-		var commands = new Dictionary<string, RequestEnum> {
-			{"show-assignment", RequestEnum.ShowAssignment},
-			{"show-assignments", RequestEnum.ShowAssignments},
-			{"show-solution", RequestEnum.ShowSolution},
-			{"show-task-description", RequestEnum.ShowTaskDescription},
-			{"add-solution", RequestEnum.AddSolution},
-			{"add-assignment", RequestEnum.AddAssignment},
-			{"add-test", RequestEnum.AddTest},
-			{"add-task-description", RequestEnum.AddTaskDescription},
-			{"remove-assignment", RequestEnum.RemoveAssignment},
-			{"remove-test", RequestEnum.RemoveTest},
-			{"remove-task-description", RequestEnum.RemoveTaskDescription},
-			{"assign-task", RequestEnum.AssignTask},
-			{"unassign-task", RequestEnum.UnassignTask},
-			{"exit", RequestEnum.Exit},
-		};
-
 		string command = "";
 		ConsoleKeyInfo key;
 
@@ -205,8 +210,8 @@ public class ConsoleUI : IUserInterface {
 				args = new string[commandSplit.Length - 1];
 				Array.Copy(commandSplit, 1, args, 0, commandSplit.Length - 1);
 					
-				if( commands.ContainsKey(request) ){
-					return commands[request];
+				if( commandOptions.ContainsKey(request) ){
+					return commandOptions[request];
 				} else {
 					if( request == "help" ) HelpCommand();
 					else if(request != "" ) Console.WriteLine("Invalid command");
@@ -216,7 +221,7 @@ public class ConsoleUI : IUserInterface {
 
 			// TODO arrow keys add command history
 			if( key.Key == ConsoleKey.Tab ){
-				command = TabMatch(command, commands);
+				command = TabMatch(command);
 			} else if( key.Key == ConsoleKey.Backspace ){
 				command = DeleteChar(command);
 			} else {
