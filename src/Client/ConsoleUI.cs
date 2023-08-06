@@ -126,11 +126,16 @@ public class ConsoleUI : IUserInterface {
 			{"show-assignment", RequestEnum.ShowAssignment},
 			{"show-assignments", RequestEnum.ShowAssignments},
 			{"show-solution", RequestEnum.ShowSolution},
+			{"show-task-description", RequestEnum.ShowTaskDescription},
 			{"submit-solution", RequestEnum.SubmittedSolution},
-			{"add-assignment", RequestEnum.CreateAssignment},
+			{"add-assignment", RequestEnum.AddAssignment},
 			{"add-test", RequestEnum.AddTest},
 			{"add-task-description", RequestEnum.AddTaskDescription},
+			{"remove-assignment", RequestEnum.RemoveAssignment},
+			{"remove-test", RequestEnum.RemoveTest},
+			{"remove-task-description", RequestEnum.RemoveTaskDescription},
 			{"assign-task", RequestEnum.AssignTask},
+			{"unassign-task", RequestEnum.UnassignTask},
 			{"exit", RequestEnum.Exit},
 		};
 
@@ -209,9 +214,22 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	public void ShowAssignments(string[] assignments){
-		foreach(var a in assignments){
-			Console.WriteLine($"{ExtractName(a)}");
+		foreach(var assignment in assignments){
+			Console.WriteLine($"{ExtractName(assignment)}");
 		}
+	}
+
+	public void ShowAssignment(string[] assignment){
+		ShowTaskDescription(assignment[0]);
+		Console.WriteLine();
+
+		for(int i=1; i < assignment.Length; i++){
+			Console.WriteLine(assignment[i]); // TODO display basic info about solution
+		}
+	}
+
+	public void ShowTaskDescription(string description){
+		Console.Write(description);
 	}
 
 	public void InvalidArguments(){

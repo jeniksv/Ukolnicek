@@ -68,7 +68,12 @@ public class Assignment : IAssignment{
 
 	public static void Create(string assignmentName){
 		assignmentName = GetFullAssignmentName(assignmentName);
-		if( !Exists(assignmentName) ) Directory.CreateDirectory($"{assignmentName}");
+
+		if( Directory.Exists(assignmentName) ){
+			throw new InvalidOperationException("assignment already exists");
+		}
+			
+		Directory.CreateDirectory($"{assignmentName}");
 	}
 
 	// TODO task description return as byte[]?

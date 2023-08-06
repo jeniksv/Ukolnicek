@@ -59,8 +59,8 @@ public class TcpUser : IDisposable{
 			case RequestEnum.AssignTask:
 				AssignTask(request);
 				break;
-			case RequestEnum.CreateAssignment:
-				CreateAssignment(request);
+			case RequestEnum.AddAssignment:
+				AddAssignment(request);
 				break;
 			case RequestEnum.ShowAssignment:
 				ShowAssignment(request);
@@ -73,6 +73,9 @@ public class TcpUser : IDisposable{
 				break;
 			case RequestEnum.AddTest:
 				AddTest(request);
+				break;
+			case RequestEnum.ShowTaskDescription:
+				ShowTaskDescription(request);
 				break;
 		}
 	}
@@ -97,7 +100,6 @@ public class TcpUser : IDisposable{
 		var fileName = (string)data[1];
 		File.WriteAllBytes(fileName, (byte[])data[2]);
 		
-		// TODO restructure assignments
 		IAssignment a = new Assignment(assignmentName);
 		var result = a.RunTests(fileName);
 		
@@ -111,19 +113,6 @@ public class TcpUser : IDisposable{
 	}
 
 	private void CreateUser(IRequest<object> request){
-		// TODO zase data v requestu a vracim true kdyz uspech a false kdyz neuspech
-		var userName = GetData<string>(request);
-		while(true){
-			var correctUserName = !Directory.Exists($"Data/Users/{userName}");
-			transfer.Send( new Response<bool> {Data = correctUserName} );
-			if( correctUserName ){
-				var passwd = transfer.Receive<Request<string>>().Data;
-				Directory.CreateDirectory($"Data/Users/{userName}");
-				File.WriteAllText($"Data/Users/{userName}/passwd", passwd);
-				break;
-			}
-			userName = transfer.Receive<Request<string>>().Data;
-		}
 	}
 
 	private void AssignTask(IRequest<object> request){
@@ -134,14 +123,16 @@ public class TcpUser : IDisposable{
 		if( !Directory.Exists(directory) ) Directory.CreateDirectory(directory);
 	}
 
-	private void CreateAssignment(IRequest<object> request){
-		// TODO update assignment class to be static
-		// TODO refactory all these methods
-		var data = GetData<object[]>(request);
-		if( !Directory.Exists($"Data/Assignments/{(string)data[0]}") ){
-			Directory.CreateDirectory($"Data/Assignments/{(string)data[0]}");
-			// File.WriteAllBytes($"Data/Assignments/{(string)data[0]}/README.md", (byte[])data[1]);
-		}
+	private void UnassignTask(IRequest<object> request){
+		// TODO check for group
+		var data = GetData<string[]>(request); // assignment, user 
+
+		// TODO delete assignment from users directory
+	}
+
+	private void AddAssignment(IRequest<object> request){
+		var data = GetData<string>(request);
+		Assignment.Create(data);
 	}
 
 	private void AddTaskDescription(IRequest<object> request){
@@ -176,17 +167,15 @@ public class TcpUser : IDisposable{
 	}
 
 	private void ShowAssignment(IRequest<object> request){
-		// TODO repair for user
-		// TODO send taskDescription as bytes?
 		var assignmentName = GetData<string>(request);
-		var taskDescription = Assignment.GetTaskDescription(assignmentName);
-		var temp = new List<string>() { taskDescription };
+		
+		var response = new List<string>(){ Assignment.GetTaskDescription(assignmentName) };
 
 		foreach(var d in Directory.GetDirectories($"Data/Users/{Name}/{assignmentName}")){
-			temp.Add(d);
+			response.Add(d);
 		}
 		
-		transfer.Send( new Response<string[]> {Data = temp.ToArray()} );
+		transfer.Send( new Response<string[]> {Data = response.ToArray()} );
 	}
 
 	private void ShowSolution(IRequest<object> request){
@@ -194,6 +183,14 @@ public class TcpUser : IDisposable{
 		var json = File.ReadAllText($"Data/Users/{Name}/{solutionName}/result.json");
 		var assignmentResult = JsonConvert.DeserializeObject<AssignmentResult>(json);
 		transfer.Send( new Response<AssignmentResult> { Data = assignmentResult } );	
+	}
+
+	private void ShowTaskDescription(IRequest<object> request){
+		var assignmentName = GetData<string>(request);
+		
+		var response = Assignment.GetTaskDescription(assignmentName);
+
+		transfer.Send( new Response<string> {Data = response} );
 	}
 
 
@@ -205,4 +202,3 @@ public class TcpUser : IDisposable{
 		transfer.Dispose();
 	}
 }
-

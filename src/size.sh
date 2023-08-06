@@ -18,7 +18,8 @@ files=( "Common/Assignment.cs" \
 	"Client/Admin.cs" \
 	"Client/Student.cs" \
 	"Client/UserInterface.cs" \
-	"Client/ConsoleUI.cs" )
+	"Client/ConsoleUI.cs" \
+	"Client/Parser.cs" )
 
 total_size=0
 
@@ -31,3 +32,11 @@ total_size_human=$(echo "$total_size" | numfmt --to=iec)
 
 echo "Total size: $total_size_human"
 
+total_lines=0
+
+for file in "${files[@]}"; do
+    lines=$(wc -l < "$file")
+    total_lines=$((total_lines + lines))
+done
+
+echo "Total lines: $total_lines"

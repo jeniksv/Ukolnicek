@@ -25,10 +25,8 @@ public class Server : IDisposable{
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 			
 			var newClient = new TcpUser(client);
-			// newClient.ClientLoop();
 			Task.Run(() => newClient.ClientLoop());
 			clients.Add(newClient);
-			Console.WriteLine("do not wait");
 		}
 	}
 

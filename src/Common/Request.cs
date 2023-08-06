@@ -11,24 +11,30 @@ public enum RequestEnum{
 	Exit,
 
 	ShowAssignments, // List<string>
-	ShowAssignment, // zadani plus pokusy co byly List<string> + README.md
+	ShowAssignment, // for admin user should be specified
 	ShowSolution, // AssignmentResult + *.py
+	ShowTaskDescription,
+
+	ShowStudents,
 	
 	SubmittedSolution,
-	
+
 	// admin requests
 	AssignTask, // TODO mozna AssignAll, to bude v klidu
+	UnassignTask,
 
-	CreateAssignment,
+	AddAssignment,
 	AddTest,
 	AddTaskDescription,
-	RemoveTest,
+	AddGroup,
 
+	RemoveTest,
+	RemoveAssignment,
+	RemoveTaskDescription,
+	RemoveGroup,
 	/*
 	 * -> Admin TODO
-	 * CreateGroup 
-	 * UpdateStudentPoints
-	 * ShowStudents
+	 *  manualni oprava bodu, moznost napsat komentar
 	 */
 }
 
@@ -60,5 +66,3 @@ public static class Request{
 
 	public static Request<T> Create<T>(RequestEnum type, T data) => new Request<T>(type, data);
 }
-
-// TODO create request data type

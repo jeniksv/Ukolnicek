@@ -22,7 +22,6 @@ public abstract class User{
 	}
 
 	public void ClientLoop(){
-		// TODO async method for creating tasks -> submitted solution, i can 
 		bool running = true;
 		while( running ){
 			switch( ui.GetCommand(out string[] args) ){
@@ -30,16 +29,22 @@ public abstract class User{
 					ShowAssignments();
 					break;
 				case RequestEnum.ShowAssignment:
-					ShowAssignment("Prime");
-					break;
-				case RequestEnum.SubmittedSolution:
-					SubmitSolution(args);
+					ShowAssignment(args);
 					break;
 				case RequestEnum.ShowSolution:
 					ShowSolution(args);
 					break;
+				case RequestEnum.ShowTaskDescription:
+					ShowTaskDescription(args);
+					break;
+				case RequestEnum.SubmittedSolution:
+					SubmitSolution(args);
+					break;
 				case RequestEnum.AddTest:
 					AddTest(args);
+					break;
+				case RequestEnum.AddAssignment:
+					AddAssignment(args);
 					break;
 				case RequestEnum.AssignTask:
 					AssignTask(args);
@@ -53,35 +58,25 @@ public abstract class User{
 	}
 
 	public void SubmitSolution(string[] args){
-		// TODO handle invalid arguments
+		if( args.Length < 2 || !File.Exists(args[1]) ){ // TODO pass this to parser
+			ui.InvalidArguments();
+			return;
+		}
+
 		var data = new object[] {args[0], args[1], File.ReadAllBytes(args[1])};
 		Notify( Request.Create(RequestEnum.SubmittedSolution, data) );
 	}
 
 	public void CreateUser(){
-		while(true){
-			Console.Write("Enter username: ");
-			Notify( Request.Create(RequestEnum.CreateUser, Console.ReadLine()) );
-			var response = GetResponse<bool>();
-			if( response.Data ){
-				// something like passwords are same and thne notify
-				Console.Write("Enter password: ");
-				Notify( Request.Create(RequestEnum.CreateUser, Console.ReadLine()) );
-				break;
-			}
-			Console.WriteLine("User already exists");
-		}
 	}
 
 	public void AssignTask(string[] args){
-		Notify( Request.Create(RequestEnum.AssignTask, args) );
-	}
+		if( args.Length < 2 ){
+			ui.InvalidArguments();
+			return;
+		}
 
-	public void CreateAssignment(){
-		var assignmentName = "Palindrome";
-		var file = File.ReadAllBytes("task.md");
-		var data = new object[] {assignmentName, file};
-		Notify( Request.Create(RequestEnum.CreateAssignment, data) );
+		Notify( Request.Create(RequestEnum.AssignTask, args) );
 	}
 
 	public void AddTest(string[] args){
@@ -98,31 +93,52 @@ public abstract class User{
 		var time = p.Time != null ? p.Time : 5000; // TODO default values should be in assignment
 		var points = p.Points != null ? p.Points : 1;
 
-		var data = new object[]{p.AssignmentName, p.TestName, outputBytes, inputBytes, argsBytes, time, points};
+		var data = new object[]{p.AssignmentName!, p.TestName!, outputBytes!, inputBytes!, argsBytes!, time, points};
 
 		Notify( Request.Create(RequestEnum.AddTest, data) );	
 	}
 
-	public void ShowAssignments(){ // TODO virtual. for admin it should show all assignments
+	public void AddAssignment(string[] args){
+		if( args.Length == 0 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.AddAssignment, args[0]));
+	}
+
+	public void ShowAssignments(){
 		Notify( Request.Create(RequestEnum.ShowAssignments) );
 		var response = GetResponse<string[]>();
 		ui.ShowAssignments(response.Data);
 	}
 
-	public void ShowAssignment(string assignmentName){
-		Notify( Request.Create(RequestEnum.ShowAssignment, assignmentName) );
+	public void ShowAssignment(string[] args){ // TODO possible more arguments, display assignment info about given assignemnts
+		if( args.Length == 0 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.ShowAssignment, args[0]));
 		var response = GetResponse<string[]>(); // task description, list of solutions
-		DisplayAssignment(response.Data);
+		ui.ShowAssignment(response.Data);
 	}
 
 	public void ShowSolution(string[] args){
-		Notify( Request.Create(RequestEnum.ShowSolution, $"{args[0]}/{args[1]}") );
+		Notify( Request.Create(RequestEnum.ShowSolution, $"{args[0]}/{args[1]}"));
 		var response = GetResponse<AssignmentResult>();
 		ui.ShowSolution(response.Data);
 	}
 
-	public void DisplayAssignment(string[] a){
-		foreach(var v in a ) Console.WriteLine(v);
+	public void ShowTaskDescription(string[] args){
+		if( args.Length == 0 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.ShowTaskDescription, args[0]));
+		var response = GetResponse<string>();
+		ui.ShowTaskDescription(response.Data);
 	}
 
 	public IResponse<T> GetResponse<T>(){
