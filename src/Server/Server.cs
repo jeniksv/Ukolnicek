@@ -4,7 +4,7 @@ using System.Text;
 using Ukolnicek.Communication;
 using Ukolnicek.Testing;
 
-namespace AppServer; 
+namespace Ukolnicek.Server; 
 
 public class Server : IDisposable{
 	private readonly TcpListener server;
@@ -25,8 +25,10 @@ public class Server : IDisposable{
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 			
 			var newClient = new TcpUser(client);
-			newClient.ClientLoop();
+			// newClient.ClientLoop();
+			Task.Run(() => newClient.ClientLoop());
 			clients.Add(newClient);
+			Console.WriteLine("do not wait");
 		}
 	}
 

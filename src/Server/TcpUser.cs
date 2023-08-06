@@ -4,10 +4,8 @@ using System.Text;
 using Ukolnicek.Communication;
 using Ukolnicek.Testing;
 using Newtonsoft.Json;
-//using System.Text.Json;
-//using System.Text.Json.Serialization;
 
-namespace AppServer;
+namespace Ukolnicek.Server;
 
 // TODO mutexes for admin operations
 // TODO cache created assignments etc
@@ -129,6 +127,7 @@ public class TcpUser : IDisposable{
 	}
 
 	private void AssignTask(IRequest<object> request){
+		// TODO check if second argument is not name of group
 		var data = GetData<string[]>(request);
 
 		var directory = $"Data/Users/{data[0]}/{data[1]}";

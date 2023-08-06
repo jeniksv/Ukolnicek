@@ -41,6 +41,9 @@ public abstract class User{
 				case RequestEnum.AddTest:
 					AddTest(args);
 					break;
+				case RequestEnum.AssignTask:
+					AssignTask(args);
+					break;
 				case RequestEnum.Exit:
 					Notify( Request.Create(RequestEnum.Exit) );
 					running = false;
@@ -71,11 +74,7 @@ public abstract class User{
 	}
 
 	public void AssignTask(string[] args){
-		var userName = "Jenda";
-		var task = "Prime";
-		var data = new string[] {userName, task};
-
-		Notify( Request.Create(RequestEnum.AssignTask, data) );
+		Notify( Request.Create(RequestEnum.AssignTask, args) );
 	}
 
 	public void CreateAssignment(){

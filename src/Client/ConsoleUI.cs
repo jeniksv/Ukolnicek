@@ -130,6 +130,7 @@ public class ConsoleUI : IUserInterface {
 			{"add-assignment", RequestEnum.CreateAssignment},
 			{"add-test", RequestEnum.AddTest},
 			{"add-task-description", RequestEnum.AddTaskDescription},
+			{"assign-task", RequestEnum.AssignTask},
 			{"exit", RequestEnum.Exit},
 		};
 

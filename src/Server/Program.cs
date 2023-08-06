@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using AppServer;
+using Ukolnicek.Server;
 
 public class Progam{
 	public static async Task Main(string[] args){
