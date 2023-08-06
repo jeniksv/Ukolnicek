@@ -28,7 +28,7 @@ public abstract class User{
 				case RequestEnum.ShowAssignments:
 					ShowAssignments();
 					break;
-				case RequestEnum.ShowAssignment:
+				case RequestEnum.ShowAssignment: // TODO admin should see assignment directory
 					ShowAssignment(args);
 					break;
 				case RequestEnum.ShowSolution:
@@ -37,7 +37,7 @@ public abstract class User{
 				case RequestEnum.ShowTaskDescription:
 					ShowTaskDescription(args);
 					break;
-				case RequestEnum.SubmittedSolution:
+				case RequestEnum.SubmittedSolution: // TODO change to AddSolution
 					SubmitSolution(args);
 					break;
 				case RequestEnum.AddTest:
@@ -46,8 +46,24 @@ public abstract class User{
 				case RequestEnum.AddAssignment:
 					AddAssignment(args);
 					break;
+				case RequestEnum.AddTaskDescription:
+					AddTaskDescription(args);
+					break;
 				case RequestEnum.AssignTask:
 					AssignTask(args);
+					break;
+				case RequestEnum.UnassignTask:
+					UnassignTask(args);
+					break;
+				case RequestEnum.RemoveTest:
+					RemoveTest(args);
+					break;
+				
+				case RequestEnum.RemoveAssignment:
+					RemoveAssignment(args);
+					break;
+				case RequestEnum.RemoveTaskDescription:
+					RemoveTaskDescription(args);
 					break;
 				case RequestEnum.Exit:
 					Notify( Request.Create(RequestEnum.Exit) );
@@ -79,6 +95,15 @@ public abstract class User{
 		Notify( Request.Create(RequestEnum.AssignTask, args) );
 	}
 
+	private void UnassignTask(string[] args){ // TODO recursive directory delete dont have to work
+		if( args.Length < 2 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.UnassignTask, args) );
+	}
+
 	public void AddTest(string[] args){
 		var p = new Parser(args);
 		
@@ -93,9 +118,9 @@ public abstract class User{
 		var time = p.Time != null ? p.Time : 5000; // TODO default values should be in assignment
 		var points = p.Points != null ? p.Points : 1;
 
-		var data = new object[]{p.AssignmentName!, p.TestName!, outputBytes!, inputBytes!, argsBytes!, time, points};
+		var data = new object[] {p.AssignmentName!, p.TestName!, outputBytes!, inputBytes!, argsBytes!, time, points};
 
-		Notify( Request.Create(RequestEnum.AddTest, data) );	
+		Notify(Request.Create(RequestEnum.AddTest, data) );	
 	}
 
 	public void AddAssignment(string[] args){
@@ -104,7 +129,18 @@ public abstract class User{
 			return;
 		}
 
-		Notify( Request.Create(RequestEnum.AddAssignment, args[0]));
+		Notify(Request.Create(RequestEnum.AddAssignment, args[0]));
+	}
+
+	public void AddTaskDescription(string[] args){
+		if( args.Length < 2 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		var data = new string[] {args[0], File.ReadAllText(args[1])};
+
+		Notify(Request.Create(RequestEnum.AddTaskDescription, data));
 	}
 
 	public void ShowAssignments(){
@@ -141,6 +177,33 @@ public abstract class User{
 		ui.ShowTaskDescription(response.Data);
 	}
 
+	private void RemoveTest(string[] args){
+		if( args.Length < 2 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.RemoveTest, args));
+	}
+
+	private void RemoveAssignment(string[] args){
+		if( args.Length == 0 ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		Notify( Request.Create(RequestEnum.RemoveAssignment, args[0]));
+	}
+
+	private void RemoveTaskDescription(string[] args){
+		if( args.Length == 0 ){
+			ui.InvalidArguments();
+			return;
+		}
+		
+		Notify( Request.Create(RequestEnum.RemoveTaskDescription, args[0]));
+	}
+
 	public IResponse<T> GetResponse<T>(){
 		return transfer.Receive<IResponse<T>>();
 	}
@@ -154,7 +217,7 @@ public abstract class User{
 ///	 Factory for creating users.
 /// </summary>
 public static class Client{
-	private static string ip = "192.168.5.147"; //192.168.0.199
+	private static string ip = "10.0.4.108"; // "192.168.5.147"; //192.168.0.199
 	private static int port = 12345;
 
 	public static User? SignIn(IUserInterface ui){

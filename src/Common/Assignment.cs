@@ -82,9 +82,9 @@ public class Assignment : IAssignment{
 		return File.ReadAllText($"{assignmentName}/README.md");
 	}
 
-	public static void AddTaskDescription(string assignmentName, byte[] contents){
+	public static void AddTaskDescription(string assignmentName, string contents){
 		assignmentName = GetFullAssignmentName(assignmentName);
-		File.WriteAllBytes($"{assignmentName}/README.md", contents);
+		File.WriteAllText($"{assignmentName}/README.md", contents);
 	}
 
 	public static void RemoveTaskDescription(string assignmentName){

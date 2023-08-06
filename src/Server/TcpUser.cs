@@ -59,6 +59,9 @@ public class TcpUser : IDisposable{
 			case RequestEnum.AssignTask:
 				AssignTask(request);
 				break;
+			case RequestEnum.UnassignTask:
+				UnassignTask(request);
+				break;
 			case RequestEnum.AddAssignment:
 				AddAssignment(request);
 				break;
@@ -74,8 +77,20 @@ public class TcpUser : IDisposable{
 			case RequestEnum.AddTest:
 				AddTest(request);
 				break;
+			case RequestEnum.AddTaskDescription:
+				AddTaskDescription(request);
+				break;
 			case RequestEnum.ShowTaskDescription:
 				ShowTaskDescription(request);
+				break;
+			case RequestEnum.RemoveTest:
+				RemoveTest(request);
+				break;
+			case RequestEnum.RemoveAssignment:
+				RemoveAssignment(request);
+				break;
+			case RequestEnum.RemoveTaskDescription:
+				RemoveTaskDescription(request);
 				break;
 		}
 	}
@@ -117,17 +132,19 @@ public class TcpUser : IDisposable{
 
 	private void AssignTask(IRequest<object> request){
 		// TODO check if second argument is not name of group
-		var data = GetData<string[]>(request);
+		var data = GetData<string[]>(request); // assignmentName, studentName
 
-		var directory = $"Data/Users/{data[0]}/{data[1]}";
+		var directory = $"Data/Users/{data[1]}/{data[0]}";
 		if( !Directory.Exists(directory) ) Directory.CreateDirectory(directory);
 	}
 
 	private void UnassignTask(IRequest<object> request){
 		// TODO check for group
-		var data = GetData<string[]>(request); // assignment, user 
-
-		// TODO delete assignment from users directory
+		var data = GetData<string[]>(request); // assignmentName, studentName
+		
+		var directory = $"Data/Users/{data[1]}/{data[0]}";
+		
+		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
 	}
 
 	private void AddAssignment(IRequest<object> request){
@@ -136,8 +153,8 @@ public class TcpUser : IDisposable{
 	}
 
 	private void AddTaskDescription(IRequest<object> request){
-		// TODO
-		// Assignment.AddTaskDescription();
+		var data = GetData<string[]>(request);
+		Assignment.AddTaskDescription(data[0], data[1]);
 	}
 
 	private void AddTest(IRequest<object> request){
@@ -193,6 +210,29 @@ public class TcpUser : IDisposable{
 		transfer.Send( new Response<string> {Data = response} );
 	}
 
+	private void RemoveTest(IRequest<object> request){
+		var data = GetData<string[]>(request);
+		
+		var directory = $"Data/Assignments/{data[0]}/{data[1]}"; // assignmentName, testName
+
+		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
+	}
+	
+	private void RemoveAssignment(IRequest<object> request){
+		var assignmentName = GetData<string>(request);
+
+		var directory = $"Data/Assignments/{assignmentName}";
+
+		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
+	}
+
+	private void RemoveTaskDescription(IRequest<object> request){
+		var assignmentName = GetData<string>(request);
+
+		var fileName = $"Data/Assignments/{assignmentName}/README.md";
+
+		if( File.Exists(fileName) ) File.Delete(fileName);
+	}
 
 	private T GetData<T>(IRequest<object> update){
 		return (T)(update.Data ?? throw new InvalidOperationException($""));

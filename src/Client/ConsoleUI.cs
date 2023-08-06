@@ -118,6 +118,10 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("add-task-description [assignment name] [file]");
 		Console.WriteLine("submit-solution [assignment name] [file]");
 		Console.WriteLine("assign-task [assignment name] [student name]");
+		Console.WriteLine("unassign-task [assignment name] [student name]");
+		Console.WriteLine("remove-assignment [assignment name]");
+		Console.WriteLine("remove-test [assignment name] [test name]");
+		Console.WriteLine("remove-task-description [assignment name]");
 		Console.WriteLine("exit");
 	}
 
@@ -224,7 +228,7 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine();
 
 		for(int i=1; i < assignment.Length; i++){
-			Console.WriteLine(assignment[i]); // TODO display basic info about solution
+			Console.WriteLine(ExtractName(assignment[i])); // TODO display basic info about solution
 		}
 	}
 
