@@ -18,12 +18,12 @@ public class TcpUser : IDisposable{
 		transfer = new JsonTcpTransfer(client);
 	}
 
-	private void Verification(IRequest<object> request){
+	private void Login(IRequest<object> request){
 		var login = GetData<string[]>(request);
 		Name = login[0];
-		string passwd = login[1];
+		var passwd = login[1];
 
-		bool verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
+		var verified = Directory.Exists($"Data/Users/{Name}") && passwd == File.ReadAllText($"Data/Users/{Name}/passwd").Trim();
 
 		// response is int where 0 - not verified, 1 - verified students account, 2 - verified admins account
 		int response = verified ? (File.Exists($"Data/Users/{Name}/admin") ? 2 : 1) : 0;
@@ -31,7 +31,22 @@ public class TcpUser : IDisposable{
 		isAdmin = response == 2;
 
 		transfer.Send( new Response<int> {Data = response} );
-	} 
+	}
+
+	private void CreateAccount(IRequest<object> request){
+		var login = GetData<string[]>(request);
+		var username = login[0];
+		var passwd = login[1];
+
+		var correctUsername = !Directory.Exists($"Data/Users/{username}");
+		
+		transfer.Send( new Response<bool> {Data = correctUsername} );
+
+		if( correctUsername ){
+			Directory.CreateDirectory($"Data/Users/{username}");
+			File.WriteAllText($"Data/Users/{username}/passwd", passwd);
+		}
+	}	
 
 	public void ClientLoop(){
 		while( true ){
@@ -48,13 +63,13 @@ public class TcpUser : IDisposable{
 	public void HandleRequest(IRequest<object> request){
 		switch(request.Type){
 			case RequestEnum.Login:
-				Verification(request);
+				Login(request);
 				break;
-			case RequestEnum.SubmittedSolution:
-				SubmittedSolution(request);
+			case RequestEnum.CreateAccount:
+				CreateAccount(request);
 				break;
-			case RequestEnum.CreateUser:
-				CreateUser(request);
+			case RequestEnum.AddSolution:
+				AddSolution(request);
 				break;
 			case RequestEnum.AssignTask:
 				AssignTask(request);
@@ -108,7 +123,7 @@ public class TcpUser : IDisposable{
 		}
 	}
 
-	private void SubmittedSolution(IRequest<object> request){
+	private void AddSolution(IRequest<object> request){
 		var data = GetData<object[]>(request);
 		
 		var assignmentName = (string)data[0];
@@ -125,9 +140,6 @@ public class TcpUser : IDisposable{
 
 		var json = JsonConvert.SerializeObject(result);
 		File.WriteAllText($"Data/Users/{Name}/{assignmentName}/{solutionName}/result.json", json);
-	}
-
-	private void CreateUser(IRequest<object> request){
 	}
 
 	private void AssignTask(IRequest<object> request){
@@ -177,6 +189,7 @@ public class TcpUser : IDisposable{
 			assignments = Directory.GetDirectories($"Data/Assignments/");
 		} else{
 			// TODO admin should have all assignments in your directory
+			// TODO picovina, spatne hodnoty
 			assignments = Directory.GetDirectories($"Data/Users/{Name}");
 		}
 

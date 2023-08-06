@@ -5,8 +5,48 @@ using Ukolnicek.Testing;
 namespace Ukolnicek.Client;
 
 public class ConsoleUI : IUserInterface {
-	public string Username { get; set; }
-	public string[] CommandOptions { get; set; }
+	public Dictionary<string, RequestEnum> CommandOptions { get; set; }
+	private User user;
+
+	public ConsoleUI(){}
+
+	public void SetUser(User u){
+		user = u;
+
+		if(user is Admin){
+			
+		}
+	}
+
+	public void MainLoop(){
+		if( user == null ) return;
+
+		bool running = true;
+
+		while( running ){
+			var command = GetCommand(out string[] args);
+
+			if( command == RequestEnum.Exit ) break;
+
+			var data = user.HandleCommand(command, args);
+			
+			// TODO tohle zabal do funkce
+			switch( command ){
+				case RequestEnum.ShowAssignments:
+					ShowAssignments((string[])data);
+					break;
+				case RequestEnum.ShowAssignment:
+					ShowAssignment((string[])data);
+					break;
+				case RequestEnum.ShowSolution:
+					ShowSolution((AssignmentResult)data);
+					break;
+				case RequestEnum.ShowTaskDescription:
+					ShowTaskDescription((string)data);
+					break;
+			}
+		}
+	}
 
 	public string GetUsername(){
 		return Console.ReadLine()!;
@@ -14,6 +54,10 @@ public class ConsoleUI : IUserInterface {
 
 	public void AskUsername(){
 		Console.Write("username: ");
+	}
+
+	public void AccountExists(){
+		Console.WriteLine("That username is taken. Try another one.");
 	}
 
 	public string GetPassword(){
@@ -95,7 +139,7 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	private void ShowPrompt(){
-		Console.Write($"{Username} > ");
+		Console.Write($"{user.Name} > ");
 	}
 
 	private string DeleteChar(string command){
@@ -109,20 +153,24 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	private void HelpCommand(){
-		// TODO command options diff for admin
 		Console.WriteLine("show-assignment [assignment name]");
 		Console.WriteLine("show-assignments");
 		Console.WriteLine("show-solution [assignment name] [solution name]");
+		Console.WriteLine("exit");
+		Console.WriteLine("add-solution [assignment name] [file]");
+
+		if(user is Admin){
 		Console.WriteLine("add-assignment [assignment name]");
 		Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
 		Console.WriteLine("add-task-description [assignment name] [file]");
-		Console.WriteLine("submit-solution [assignment name] [file]");
+		
 		Console.WriteLine("assign-task [assignment name] [student name]");
 		Console.WriteLine("unassign-task [assignment name] [student name]");
+		
 		Console.WriteLine("remove-assignment [assignment name]");
 		Console.WriteLine("remove-test [assignment name] [test name]");
 		Console.WriteLine("remove-task-description [assignment name]");
-		Console.WriteLine("exit");
+		}
 	}
 
 	public RequestEnum GetCommand(out string[] args){
@@ -131,7 +179,7 @@ public class ConsoleUI : IUserInterface {
 			{"show-assignments", RequestEnum.ShowAssignments},
 			{"show-solution", RequestEnum.ShowSolution},
 			{"show-task-description", RequestEnum.ShowTaskDescription},
-			{"submit-solution", RequestEnum.SubmittedSolution},
+			{"add-solution", RequestEnum.AddSolution},
 			{"add-assignment", RequestEnum.AddAssignment},
 			{"add-test", RequestEnum.AddTest},
 			{"add-task-description", RequestEnum.AddTaskDescription},
@@ -154,7 +202,6 @@ public class ConsoleUI : IUserInterface {
 				Console.WriteLine();
 				var commandSplit = command.Split();
 				var request = commandSplit[0];
-				// TODO check for valid arguments
 				args = new string[commandSplit.Length - 1];
 				Array.Copy(commandSplit, 1, args, 0, commandSplit.Length - 1);
 					

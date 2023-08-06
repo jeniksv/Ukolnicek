@@ -7,31 +7,34 @@ namespace Ukolnicek.Communication;
 /// </summary>
 public enum RequestEnum{
 	Login,
-	CreateUser,
+	CreateAccount, // TODO
 	Exit,
 
-	ShowAssignments, // List<string>
+	ShowAssignments, // string[]
 	ShowAssignment, // for admin user should be specified
-	ShowSolution, // AssignmentResult + *.py
+	ShowSolution, // + *.py
 	ShowTaskDescription,
 
-	ShowStudents,
-	
-	SubmittedSolution,
+	ShowStudents, // TODO
 
-	// admin requests
-	AssignTask, // TODO mozna AssignAll, to bude v klidu
+	AssignTask, 
 	UnassignTask,
 
 	AddAssignment,
 	AddTest,
 	AddTaskDescription,
 	AddGroup,
+	AddSolution, // = SubmittedSolution
+	AddComment, // TODO
+	AddAdmin, // TODO
 
 	RemoveTest,
 	RemoveAssignment,
 	RemoveTaskDescription,
 	RemoveGroup,
+
+	UpdatePoints, // TODO
+
 	/*
 	 * -> Admin TODO
 	 *  manualni oprava bodu, moznost napsat komentar
