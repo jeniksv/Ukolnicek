@@ -11,6 +11,7 @@ public interface IUserInterface {
 	void AskUsername();
 	void AskPassword();
 	void InvalidLogin();
+	void InvalidArguments();
 	
 	string GetUsername();
 	string GetPassword();

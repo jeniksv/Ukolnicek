@@ -117,6 +117,7 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
 		Console.WriteLine("add-task-description [assignment name] [file]");
 		Console.WriteLine("submit-solution [assignment name] [file]");
+		Console.WriteLine("assign-task [assignment name] [student name]");
 		Console.WriteLine("exit");
 	}
 
@@ -156,6 +157,7 @@ public class ConsoleUI : IUserInterface {
 				}
 			}
 
+			// TODO arrow keys add command history
 			if( key.Key == ConsoleKey.Tab ){
 				command = TabMatch(command, commands);
 			} else if( key.Key == ConsoleKey.Backspace ){
@@ -209,5 +211,9 @@ public class ConsoleUI : IUserInterface {
 		foreach(var a in assignments){
 			Console.WriteLine($"{ExtractName(a)}");
 		}
+	}
+
+	public void InvalidArguments(){
+		Console.WriteLine("Invalid arguments");	
 	}
 }

@@ -43,7 +43,7 @@ public class TcpUser : IDisposable{
 
 			if(request.Type != RequestEnum.Login) Console.WriteLine($"{Name} - {request.Type}");
 			
-			HandleRequest(request);
+			HandleRequest(request); // TODO handle exceptions
 		}
 	}
 
@@ -73,11 +73,12 @@ public class TcpUser : IDisposable{
 			case RequestEnum.ShowSolution:
 				ShowSolution(request);
 				break;
+			case RequestEnum.AddTest:
+				AddTest(request);
+				break;
 		}
 	}
 
-	// TODO create static class Action -> Action.HandleSubmittedSolution -> return type should be send then
-	// but i do not want to pass transfer object somewhere else
 	private string SolutionName(string assignmentName){
 		int i = 1;
 	
@@ -98,9 +99,10 @@ public class TcpUser : IDisposable{
 		var fileName = (string)data[1];
 		File.WriteAllBytes(fileName, (byte[])data[2]);
 		
+		// TODO restructure assignments
 		IAssignment a = new Assignment(assignmentName);
 		var result = a.RunTests(fileName);
-		//transfer.Send( new Response<AssignmentResult> {Data = result} );
+		
 		var solutionName = SolutionName(assignmentName);
 		
 		Directory.CreateDirectory($"Data/Users/{Name}/{assignmentName}/{solutionName}");
@@ -127,9 +129,6 @@ public class TcpUser : IDisposable{
 	}
 
 	private void AssignTask(IRequest<object> request){
-		//var task = GetData<string>(request);
-		// TODO get all data from request.Data, so serialize string array or object array ...
-		//var userName = transfer.Receive<Request<string>>().Data;
 		var data = GetData<string[]>(request);
 
 		var directory = $"Data/Users/{data[0]}/{data[1]}";
@@ -152,6 +151,17 @@ public class TcpUser : IDisposable{
 	}
 
 	private void AddTest(IRequest<object> request){
+		var data = GetData<object[]>(request);
+	
+		var assignmentName = (string)data[0];
+		var testName = (string)data[1];
+		var outputBytes = (byte[])data[2];
+		var inputBytes = (byte[])data[3];
+		var argsBytes = (byte[])data[4];
+		var time = (int)(long)data[5]; // nechapu proc to musim napsat takhle
+		var points = (int)(long)data[6];
+		
+		Assignment.AddTest(assignmentName, testName, outputBytes, inputBytes, argsBytes, time, points);
 	}
 
 	private void ShowAssignments(IRequest<object> request){

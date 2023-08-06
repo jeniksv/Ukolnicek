@@ -23,8 +23,8 @@ public abstract class User{
 
 	public void ClientLoop(){
 		// TODO async method for creating tasks -> submitted solution, i can 
-		bool b = true;
-		while( b ){
+		bool running = true;
+		while( running ){
 			switch( ui.GetCommand(out string[] args) ){
 				case RequestEnum.ShowAssignments:
 					ShowAssignments();
@@ -38,9 +38,12 @@ public abstract class User{
 				case RequestEnum.ShowSolution:
 					ShowSolution(args);
 					break;
+				case RequestEnum.AddTest:
+					AddTest(args);
+					break;
 				case RequestEnum.Exit:
 					Notify( Request.Create(RequestEnum.Exit) );
-					b = false;
+					running = false;
 					break;
 			}
 		}
@@ -67,26 +70,38 @@ public abstract class User{
 		}
 	}
 
-	public void AssignTask(){
+	public void AssignTask(string[] args){
 		var userName = "Jenda";
 		var task = "Prime";
-		var data = new string[] { userName, task };
+		var data = new string[] {userName, task};
 
-		Notify( Request.Create( RequestEnum.AssignTask, data) );
+		Notify( Request.Create(RequestEnum.AssignTask, data) );
 	}
 
 	public void CreateAssignment(){
 		var assignmentName = "Palindrome";
 		var file = File.ReadAllBytes("task.md");
-		var data = new object[] { assignmentName, file };
-		Notify( Request.Create( RequestEnum.CreateAssignment, data) );
+		var data = new object[] {assignmentName, file};
+		Notify( Request.Create(RequestEnum.CreateAssignment, data) );
 	}
 
-	public void AddTest(){
-		var assignmentName = "Palindrome";
-		var input = File.Exists("in") ? File.ReadAllBytes("in") : null;
-		var output = File.ReadAllBytes("out");
-		var args = File.Exists("args") ? File.ReadAllBytes("args") : null;
+	public void AddTest(string[] args){
+		var p = new Parser(args);
+		
+		if( !p.CorrectArguments ){
+			ui.InvalidArguments();
+			return;
+		}
+
+		var outputBytes = p.OutputFileName != null ? File.ReadAllBytes(p.OutputFileName) : null;
+		var inputBytes = p.InputFileName != null ? File.ReadAllBytes(p.InputFileName) : null;
+		var argsBytes = p.ArgsFileName != null ? File.ReadAllBytes(p.ArgsFileName) : null;
+		var time = p.Time != null ? p.Time : 5000; // TODO default values should be in assignment
+		var points = p.Points != null ? p.Points : 1;
+
+		var data = new object[]{p.AssignmentName, p.TestName, outputBytes, inputBytes, argsBytes, time, points};
+
+		Notify( Request.Create(RequestEnum.AddTest, data) );	
 	}
 
 	public void ShowAssignments(){ // TODO virtual. for admin it should show all assignments

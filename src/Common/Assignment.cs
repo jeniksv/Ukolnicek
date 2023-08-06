@@ -31,7 +31,6 @@ public struct AssignmentResult{
 
 public interface IAssignment{
 	AssignmentResult RunTests(string programName);
-	void AddTest(string testName, FileInfo outputFile, int points, int time, FileInfo? inputFile, FileInfo? argumentsFile);
 	void RemoveTest(string testName);
 }
 
@@ -120,20 +119,24 @@ public class Assignment : IAssignment{
 		return Result;
 	}
 
-	private bool ValidTestName(string testName){
+	private static bool ValidTestName(string testName){
 		return !Directory.Exists($"Data/Assignments/{testName}");
 	}
 
-	private void MoveFiles(string directory, FileInfo outputFile, FileInfo? inputFile, FileInfo? argumentsFile){
-		outputFile.MoveTo($"{directory}/out");
+	private static void MoveFiles(string directory, byte[] outputFile, byte[] inputFile, byte[] argsFile){
+		File.WriteAllBytes($"{directory}/out", outputFile);
 
-		if( inputFile != null ) inputFile.MoveTo($"{directory}/in");
+		if( inputFile != null ) File.WriteAllBytes($"{directory}/in", inputFile);
 		
-		if( argumentsFile != null ) argumentsFile.MoveTo($"{directory}/args");
+		if( argsFile != null ) File.WriteAllBytes($"{directory}/args", argsFile);
 	}
 
-	public void AddTest(string testName, FileInfo outputFile, int points, int time, FileInfo? inputFile, FileInfo? argumentsFile){
-		string testDirectory = $"{Name}/{testName}";
+	public static void AddTest(string assignmentName, string testName, byte[] outputFile, byte[] inputFile, byte[] argsFile, int time, int points){
+		string testDirectory = $"Data/Assignments/{assignmentName}/{testName}";
+
+		if( !Directory.Exists($"Data/Assignments/{assignmentName}") ){
+			throw new InvalidOperationException("assignment does not exist");
+		}
 
 		if( !ValidTestName(testDirectory) ){
 			throw new InvalidOperationException("test name already exists");
@@ -141,7 +144,7 @@ public class Assignment : IAssignment{
 		
 		Directory.CreateDirectory(testDirectory);
 
-		MoveFiles(testDirectory, outputFile, inputFile, argumentsFile);
+		MoveFiles(testDirectory, outputFile, inputFile, argsFile);
 
 		var test = new Test.Builder().WithName(testDirectory).WithMaxPoints(points).WithProcessorTime(time).Build();
 
