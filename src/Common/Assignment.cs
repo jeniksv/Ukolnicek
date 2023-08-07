@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Ukolnicek.Testing;
 
+/// <summary>
+/// Represents the result of running tests for an assignment.
+/// </summary>
 public struct AssignmentResult{
 	public List<TestLog> TestLogs { get; set; }
 	public int CorrectTests { get; set; }
@@ -29,32 +32,22 @@ public struct AssignmentResult{
 	}
 }
 
+/// <summary>
+/// Represents an assignment management class.
+/// </summary>
 public class Assignment{
-	public List<string> testNames;
-	public string Name;
-
-	public AssignmentResult Result;
-
-	public Assignment(string name){
-		Name = GetFullAssignmentName(name);
-		
-		if( !Exists(Name) ) Directory.CreateDirectory($"{Name}");
-
-		testNames = new List<string>(Directory.GetDirectories(Name));
-	}
-
-	private static bool Exists(string name){
-		name = GetFullAssignmentName(name);
-
-		foreach(var assignment in Directory.GetDirectories($"Data/Assignments/")){
-			if(assignment == name) return true;
-		}
-
-		return false;
-	}
-
 	private static string GetFullAssignmentName(string name){
 		return !name.StartsWith($"Data/Assignments/") ? $"Data/Assignments/{name}" : name;
+	}
+
+	/// <summary>
+	/// Checks if an assignment exists.
+	/// </summary>
+	/// <param name="name">Name of the assignment.</param>
+	/// <returns>True if the assignment exists; otherwise, false.</returns>
+	public static bool Exists(string name){
+		name = GetFullAssignmentName(name);
+		return Directory.Exists(name);
 	}
 
 	public static void Create(string assignmentName){
@@ -102,6 +95,12 @@ public class Assignment{
 		return tests;
 	}
 
+	/// <summary>
+	/// Runs tests for the specified assignment and program.
+	/// </summary>
+	/// <param name="assignmentName">Name of the assignment.</param>
+	/// <param name="programName">Name of the program.</param>
+	/// <returns>Result of running the tests.</returns>
 	public static AssignmentResult RunTests(string assignmentName, string programName){
 		assignmentName = GetFullAssignmentName(assignmentName);
 
@@ -128,6 +127,16 @@ public class Assignment{
 		if( argsFile != null ) File.WriteAllBytes($"{directory}/args", argsFile);
 	}
 
+	/// <summary>
+	/// Adds a new test to an assignment.
+	/// </summary>
+	/// <param name="assignmentName">Name of the assignment.</param>
+	/// <param name="testName">Name of the test.</param>
+	/// <param name="outputFile">Test output file.</param>
+	/// <param name="inputFile">Test input file.</param>
+	/// <param name="argsFile">Test arguments file.</param>
+	/// <param name="time">Maximum processor time for the test.</param>
+	/// <param name="points">Points assigned to the test.</param>
 	public static void AddTest(string assignmentName, string testName, byte[] outputFile, byte[] inputFile, byte[] argsFile, int time, int points){
 		string testDirectory = $"Data/Assignments/{assignmentName}/{testName}";
 
