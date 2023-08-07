@@ -25,6 +25,7 @@ public class ConsoleUI : IUserInterface {
 		var adminOptions = new Dictionary<string, RequestEnum> {
 			{"show-group", RequestEnum.ShowGroup},
 			{"show-groups", RequestEnum.ShowGroups},
+			{"show-users", RequestEnum.ShowUsers},
                         {"add-assignment", RequestEnum.AddAssignment},
                         {"add-test", RequestEnum.AddTest},
                         {"add-task-description", RequestEnum.AddTaskDescription},
@@ -76,6 +77,9 @@ public class ConsoleUI : IUserInterface {
 					break;
 				case RequestEnum.ShowGroups:
 					ShowGroups((string[])data);
+					break;
+				case RequestEnum.ShowUsers:
+					ShowUsers((string[])data);
 					break;
 			}
 		}
@@ -188,7 +192,7 @@ public class ConsoleUI : IUserInterface {
 	private void HelpCommand(){
 		Console.WriteLine("exit");
 		if(user is Admin){
-		Console.WriteLine("show-students");
+		Console.WriteLine("show-users");
 		Console.WriteLine("show-groups");
 		Console.WriteLine("show-group [group name]");
 		}
@@ -322,6 +326,14 @@ public class ConsoleUI : IUserInterface {
 		
 		foreach(var g in groups){
 			Console.WriteLine(ExtractName(g));
+		}
+	}
+
+	public void ShowUsers(string[] users){
+		if( users == null ) return;
+
+		foreach(var user in users){
+			if(user != "Data/Users/Groups") Console.WriteLine(ExtractName(user));
 		}
 	}
 }

@@ -26,6 +26,9 @@ public class Admin : User{
 			case RequestEnum.ShowGroups:
 				data = ShowGroups();
 				break;
+			case RequestEnum.ShowUsers:
+				data = ShowUsers();
+				break;
 			case RequestEnum.AddSolution:
 				AddSolution(args);
 				break;
@@ -162,6 +165,12 @@ public class Admin : User{
 
 	private string[] ShowGroups(){
 		Notify( Request.Create(RequestEnum.ShowGroups) );
+		var response = GetResponse<string[]>();
+		return response.Data;
+	}
+
+	private string[] ShowUsers(){
+		Notify( Request.Create(RequestEnum.ShowUsers) );
 		var response = GetResponse<string[]>();
 		return response.Data;
 	}

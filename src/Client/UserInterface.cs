@@ -13,6 +13,7 @@ public interface IUserInterface {
 
 	void ShowGroup(string names);
 	void ShowGroups(string[] groups);
+	void ShowUsers(string[] users);
 
 	void SetUser(User u);
 

@@ -17,7 +17,7 @@ public enum RequestEnum{
 	ShowGroup, 
 	ShowGroups, 
 
-	ShowStudents, // TODO
+	ShowUsers, // TODO
 
 	AssignTask, 
 	UnassignTask,

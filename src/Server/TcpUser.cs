@@ -122,6 +122,9 @@ public class TcpUser : IDisposable{
 			case RequestEnum.RemoveGroup:
 				RemoveGroup(request);
 				break;
+			case RequestEnum.ShowUsers:
+				ShowUsers(request);
+				break;
 		}
 	}
 
@@ -249,6 +252,13 @@ public class TcpUser : IDisposable{
 		var response = Directory.GetFiles($"Data/Users/Groups");
 
 		transfer.Send( new Response<string[]> {Data = response} );	
+	}
+
+	private void ShowUsers(IRequest<object> request){
+		// TODO remove Groups, ted je to zadratovany v ConsoleUI
+		var response = Directory.GetDirectories($"Data/Users");
+
+		transfer.Send( new Response<string[]> {Data = response} );
 	}
 
 	private void RemoveTest(IRequest<object> request){
