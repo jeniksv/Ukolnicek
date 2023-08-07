@@ -23,12 +23,17 @@ public class ConsoleUI : IUserInterface {
 		user = u;
 
 		var adminOptions = new Dictionary<string, RequestEnum> {
+			{"show-group", RequestEnum.ShowGroup},
+			{"show-groups", RequestEnum.ShowGroups},
                         {"add-assignment", RequestEnum.AddAssignment},
                         {"add-test", RequestEnum.AddTest},
                         {"add-task-description", RequestEnum.AddTaskDescription},
+			{"add-admin", RequestEnum.AddAdmin},
+			{"add-group", RequestEnum.AddGroup},
                         {"remove-assignment", RequestEnum.RemoveAssignment},
                         {"remove-test", RequestEnum.RemoveTest},
                         {"remove-task-description", RequestEnum.RemoveTaskDescription},
+			{"remove-group", RequestEnum.RemoveGroup},
                         {"assign-task", RequestEnum.AssignTask},
                         {"unassign-task", RequestEnum.UnassignTask},
 		};
@@ -52,7 +57,7 @@ public class ConsoleUI : IUserInterface {
 
 			var data = user.HandleCommand(command, args);
 			
-			// TODO tohle zabal do funkce
+			// TODO tohle zabal do funkce ShowResponse();
 			switch( command ){
 				case RequestEnum.ShowAssignments:
 					ShowAssignments((string[])data);
@@ -65,6 +70,12 @@ public class ConsoleUI : IUserInterface {
 					break;
 				case RequestEnum.ShowTaskDescription:
 					ShowTaskDescription((string)data);
+					break;
+				case RequestEnum.ShowGroup:
+					ShowGroup((string)data);
+					break;
+				case RequestEnum.ShowGroups:
+					ShowGroups((string[])data);
 					break;
 			}
 		}
@@ -176,15 +187,23 @@ public class ConsoleUI : IUserInterface {
 
 	private void HelpCommand(){
 		Console.WriteLine("exit");
+		if(user is Admin){
+		Console.WriteLine("show-students");
+		Console.WriteLine("show-groups");
+		Console.WriteLine("show-group [group name]");
+		}
 		Console.WriteLine("show-assignment [assignment name]");
 		Console.WriteLine("show-assignments");
 		Console.WriteLine("show-solution [assignment name] [solution name]");
+		
 		Console.WriteLine("add-solution [assignment name] [file]");
 
 		if(user is Admin){
 		Console.WriteLine("add-assignment [assignment name]");
 		Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
 		Console.WriteLine("add-task-description [assignment name] [file]");
+		Console.WriteLine("add-admin [student name]");
+		Console.WriteLine("add-group [group name] [student name] ...");
 		
 		Console.WriteLine("assign-task [assignment name] [student name]");
 		Console.WriteLine("unassign-task [assignment name] [student name]");
@@ -192,6 +211,7 @@ public class ConsoleUI : IUserInterface {
 		Console.WriteLine("remove-assignment [assignment name]");
 		Console.WriteLine("remove-test [assignment name] [test name]");
 		Console.WriteLine("remove-task-description [assignment name]");
+		Console.WriteLine("remove-group [group name]");
 		}
 	}
 
@@ -291,5 +311,17 @@ public class ConsoleUI : IUserInterface {
 
 	public void InvalidArguments(){
 		Console.WriteLine("Invalid arguments");	
+	}
+
+	public void ShowGroup(string names){
+		Console.Write(names);
+	}
+
+	public void ShowGroups(string[] groups){
+		if( groups == null ) return;
+		
+		foreach(var g in groups){
+			Console.WriteLine(ExtractName(g));
+		}
 	}
 }

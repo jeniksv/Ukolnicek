@@ -89,6 +89,12 @@ public class TcpUser : IDisposable{
 			case RequestEnum.ShowSolution:
 				ShowSolution(request);
 				break;
+			case RequestEnum.ShowGroup:
+				ShowGroup(request);
+				break;
+			case RequestEnum.ShowGroups:
+				ShowGroups(request);
+				break;
 			case RequestEnum.AddTest:
 				AddTest(request);
 				break;
@@ -106,6 +112,15 @@ public class TcpUser : IDisposable{
 				break;
 			case RequestEnum.RemoveTaskDescription:
 				RemoveTaskDescription(request);
+				break;
+			case RequestEnum.AddAdmin:
+				AddAdmin(request);
+				break;
+			case RequestEnum.AddGroup:
+				AddGroup(request);
+				break;
+			case RequestEnum.RemoveGroup:
+				RemoveGroup(request);
 				break;
 		}
 	}
@@ -222,6 +237,20 @@ public class TcpUser : IDisposable{
 		transfer.Send( new Response<string> {Data = response} );
 	}
 
+	private void ShowGroup(IRequest<object> request){
+		var groupName = GetData<string>(request);
+
+		var response = File.ReadAllText($"Data/Users/Groups/{groupName}");
+		
+		transfer.Send( new Response<string> {Data = response} );
+	}
+
+	private void ShowGroups(IRequest<object> request){
+		var response = Directory.GetFiles($"Data/Users/Groups");
+
+		transfer.Send( new Response<string[]> {Data = response} );	
+	}
+
 	private void RemoveTest(IRequest<object> request){
 		var data = GetData<string[]>(request);
 		var assignmentName = data[0];
@@ -240,6 +269,35 @@ public class TcpUser : IDisposable{
 		var assignmentName = GetData<string>(request);
 
 		Assignment.RemoveTaskDescription(assignmentName);
+	}
+
+	private void AddAdmin(IRequest<object> request){
+		var name = GetData<string>(request);
+
+		if( !File.Exists($"Data/Users/{name}/admin") ){
+			File.Create($"Data/Users/{name}/admin");
+		}
+	}
+
+	private void AddGroup(IRequest<object> request){
+		var data = GetData<string[]>(request);
+		var groupName = data[0];
+
+		if( !File.Exists($"Data/Users/Groups/{groupName}") ){
+			using(StreamWriter writer = new StreamWriter($"Data/Users/Groups/{groupName}")){
+				for(int i=1; i<data.Length; i++){
+					writer.WriteLine(data[i]);
+				}
+			}
+		}
+	}
+
+	private void RemoveGroup(IRequest<object> request){
+		var groupName = GetData<string>(request);
+
+		if( File.Exists($"Data/Users/Groups/{groupName}") ) {
+			File.Delete($"Data/Users/Groups/{groupName}");
+		}
 	}
 
 	private T GetData<T>(IRequest<object> update){

@@ -7,13 +7,15 @@ namespace Ukolnicek.Communication;
 /// </summary>
 public enum RequestEnum{
 	Login,
-	CreateAccount, // TODO
+	CreateAccount, 
 	Exit,
 
 	ShowAssignments, // string[]
 	ShowAssignment, // for admin user should be specified
 	ShowSolution, // + *.py
 	ShowTaskDescription,
+	ShowGroup, 
+	ShowGroups, 
 
 	ShowStudents, // TODO
 
@@ -26,7 +28,7 @@ public enum RequestEnum{
 	AddGroup,
 	AddSolution, // = SubmittedSolution
 	AddComment, // TODO
-	AddAdmin, // TODO
+	AddAdmin, 
 
 	RemoveTest,
 	RemoveAssignment,

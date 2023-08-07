@@ -20,6 +20,12 @@ public class Admin : User{
 			case RequestEnum.ShowTaskDescription:
 				data = ShowTaskDescription(args);
 				break;
+			case RequestEnum.ShowGroup:
+				data = ShowGroup(args);
+				break;
+			case RequestEnum.ShowGroups:
+				data = ShowGroups();
+				break;
 			case RequestEnum.AddSolution:
 				AddSolution(args);
 				break;
@@ -48,7 +54,16 @@ public class Admin : User{
 				RemoveTaskDescription(args);
 				break;
 			case RequestEnum.Exit:
-				Notify( Request.Create(RequestEnum.Exit) ); // TODO
+				Notify( Request.Create(RequestEnum.Exit) );
+				break;
+			case RequestEnum.AddAdmin:
+				AddAdmin(args);
+				break;
+			case RequestEnum.AddGroup:
+				AddGroup(args);
+				break;
+			case RequestEnum.RemoveGroup:
+				RemoveGroup(args);
 				break;
 		}
 
@@ -129,5 +144,29 @@ public class Admin : User{
 		}
 
 		Notify( Request.Create(RequestEnum.UnassignTask, args) );
+	}
+
+	private void AddAdmin(string[] args){
+		Notify( Request.Create(RequestEnum.AddAdmin, args[0]) );
+	}
+
+	private void AddGroup(string[] args){
+		Notify( Request.Create(RequestEnum.AddGroup, args) );
+	}
+
+	private string ShowGroup(string[] args){
+		Notify( Request.Create(RequestEnum.ShowGroup, args[0]) );
+		var response = GetResponse<string>();
+		return response.Data;
+	}
+
+	private string[] ShowGroups(){
+		Notify( Request.Create(RequestEnum.ShowGroups) );
+		var response = GetResponse<string[]>();
+		return response.Data;
+	}
+
+	private void RemoveGroup(string[] args){
+		Notify( Request.Create(RequestEnum.RemoveGroup, args[0]) );
 	}
 }

@@ -11,6 +11,9 @@ public interface IUserInterface {
 	void ShowSolution(AssignmentResult result);
 	void ShowTaskDescription(string description);
 
+	void ShowGroup(string names);
+	void ShowGroups(string[] groups);
+
 	void SetUser(User u);
 
 	void AskUsername();
