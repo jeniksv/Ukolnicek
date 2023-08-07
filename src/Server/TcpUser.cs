@@ -123,16 +123,15 @@ public class TcpUser : IDisposable{
 		}
 	}
 
+	// TODO create static class User for user actions
 	private void AddSolution(IRequest<object> request){
 		var data = GetData<object[]>(request);
 		
 		var assignmentName = (string)data[0];
 		var fileName = (string)data[1];
 		File.WriteAllBytes(fileName, (byte[])data[2]);
-		
-		IAssignment a = new Assignment(assignmentName);
-		var result = a.RunTests(fileName);
-		
+	
+		var result = Assignment.RunTests(assignmentName, fileName);
 		var solutionName = SolutionName(assignmentName);
 		
 		Directory.CreateDirectory($"Data/Users/{Name}/{assignmentName}/{solutionName}");
@@ -225,26 +224,22 @@ public class TcpUser : IDisposable{
 
 	private void RemoveTest(IRequest<object> request){
 		var data = GetData<string[]>(request);
-		
-		var directory = $"Data/Assignments/{data[0]}/{data[1]}"; // assignmentName, testName
+		var assignmentName = data[0];
+		var testName = data[1];
 
-		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
+		Assignment.RemoveTest(assignmentName, testName);	
 	}
 	
 	private void RemoveAssignment(IRequest<object> request){
 		var assignmentName = GetData<string>(request);
 
-		var directory = $"Data/Assignments/{assignmentName}";
-
-		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
+		Assignment.Remove(assignmentName);
 	}
 
 	private void RemoveTaskDescription(IRequest<object> request){
 		var assignmentName = GetData<string>(request);
 
-		var fileName = $"Data/Assignments/{assignmentName}/README.md";
-
-		if( File.Exists(fileName) ) File.Delete(fileName);
+		Assignment.RemoveTaskDescription(assignmentName);
 	}
 
 	private T GetData<T>(IRequest<object> update){

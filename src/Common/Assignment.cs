@@ -29,16 +29,7 @@ public struct AssignmentResult{
 	}
 }
 
-public interface IAssignment{
-	AssignmentResult RunTests(string programName);
-	void RemoveTest(string testName);
-}
-
-// TODO static class at least partially? for Create, Add, RunTests ...
-// yes i think it is bullshit it should be static
-
-
-public class Assignment : IAssignment{
+public class Assignment{
 	public List<string> testNames;
 	public string Name;
 
@@ -76,7 +67,6 @@ public class Assignment : IAssignment{
 		Directory.CreateDirectory($"{assignmentName}");
 	}
 
-	// TODO task description return as byte[]?
 	public static string GetTaskDescription(string assignmentName){
 		assignmentName = GetFullAssignmentName(assignmentName);
 		return File.ReadAllText($"{assignmentName}/README.md");
@@ -92,16 +82,18 @@ public class Assignment : IAssignment{
 		if( File.Exists($"{assignmentName}/README.md") ) File.Delete($"{assignmentName}/README.md");
 	}
 
-	public static void Delete(string name){
+	public static void Remove(string name){
 		name = GetFullAssignmentName(name);
 
 		if( Exists(name) ) Directory.Delete(name, true);
 	}
 
-	private List<Test> DeserializeTests(){
+	private static List<Test> DeserializeTests(string assignmentName){
+		assignmentName = GetFullAssignmentName(assignmentName);
+		
 		List<Test> tests = new List<Test>();
 
-		foreach(var testName in Directory.GetDirectories($"{Name}")){
+		foreach(var testName in Directory.GetDirectories($"{assignmentName}")){
 			var config = File.ReadAllText($"{testName}/config.json");
 			var test = JsonSerializer.Deserialize<Test>(config);
 			tests.Add(test!);
@@ -110,18 +102,18 @@ public class Assignment : IAssignment{
 		return tests;
 	}
 
-	public AssignmentResult RunTests(string programName){
-		var tests = DeserializeTests();
+	public static AssignmentResult RunTests(string assignmentName, string programName){
+		assignmentName = GetFullAssignmentName(assignmentName);
+
+		var tests = DeserializeTests(assignmentName);
 		var temp = new List<TestLog>();
 
 		foreach(var test in tests){
 			var t = test.Run(programName);
-			Console.WriteLine(t.Result);
 			temp.Add( test.Run(programName) );
 		}
 
-		Result = new AssignmentResult(temp);
-		return Result;
+		return new AssignmentResult(temp);
 	}
 
 	private static bool ValidTestName(string testName){
@@ -129,7 +121,7 @@ public class Assignment : IAssignment{
 	}
 
 	private static void MoveFiles(string directory, byte[] outputFile, byte[] inputFile, byte[] argsFile){
-		File.WriteAllBytes($"{directory}/out", outputFile);
+		if( outputFile != null ) File.WriteAllBytes($"{directory}/out", outputFile);
 
 		if( inputFile != null ) File.WriteAllBytes($"{directory}/in", inputFile);
 		
@@ -157,11 +149,11 @@ public class Assignment : IAssignment{
 		File.WriteAllText($"{testDirectory}/config.json", config);
 	}
 
-	public void RemoveTest(string testName){
-		string testDirectory = $"{Name}/{testName}";
+	public static void RemoveTest(string assignmentName, string testName){
+		assignmentName = GetFullAssignmentName(assignmentName);
 
-		if( Directory.Exists(testDirectory) ){
-			Directory.Delete(testDirectory, true);
+		if( Directory.Exists($"{assignmentName}/{testName}") ){
+			Directory.Delete($"{assignmentName}/{testName}", true);
 		}
 	}
 }

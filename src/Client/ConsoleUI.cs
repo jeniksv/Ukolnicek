@@ -248,8 +248,9 @@ public class ConsoleUI : IUserInterface {
 
 			if( testLog.Result == TestResult.OutputMismatch ){
 				Console.WriteLine("Stdout actual:");
-				Console.WriteLine($"{testLog.Stdout}");
-				Console.WriteLine($"Stdou expected:");
+				Console.Write($"{testLog.Stdout}");
+				Console.WriteLine($"Stdout expected:");
+				Console.Write($"{testLog.StdoutExpected}");
 				continue;
 			}
 

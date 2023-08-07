@@ -7,6 +7,7 @@ namespace Ukolnicek.Testing;
 // TODO interface for test, so we can have more implementations of test like unittest based or program based
 // maybe Assignment should be more generic then test
 // ITest { void Run; ... } it should be abstract class because implementation for both test would be really similar 
+// TODO strategy pattern for different programming languages
 
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
@@ -15,11 +16,12 @@ public readonly struct TestLog{
 	public readonly int ExitCode { get; }
 	public readonly TestResult Result { get; }
 	public readonly string Stdout { get; }
+	public readonly string StdoutExpected { get; }
 	public readonly string Stderr { get; }
 	public readonly int Points { get; }
 	public readonly int MaxPoints { get; }
 
-	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points, int maxPoints){
+	public TestLog(string name, int exitCode, TestResult result, string stdout, string stderr, int points, int maxPoints, string stdoutExpected){
 		Name = name;
 		ExitCode = exitCode;
 		Result = result;
@@ -27,6 +29,7 @@ public readonly struct TestLog{
 		Stderr = stderr;
 		Points = points;
 		MaxPoints = maxPoints;
+		StdoutExpected = stdoutExpected;
 	}
 }
 
@@ -76,7 +79,7 @@ public class Test{
 		}
 	}
 
-	private bool CorrectOutput(Process p){
+	private bool CorrectOutput(Process p){ // more efficient way, but i will send all file anyway
 		if( !expectedOutputFileName ) return false;
 
 		using(var reader = new StreamReader($"{Name}/out")){
@@ -94,10 +97,19 @@ public class Test{
 		}
 	}
 
+	private bool CorrectOutput(string actual, string expected){
+		if( !expectedOutputFileName ) return false;
+
+		// kdyz si ten string musim pamatovat v logu, tak s tim nic nenadelam no
+		return actual == expected;
+	}
+
 	public TestLog Run(string programName){
 		var process = new Process(){ StartInfo = SetProcessStartInfo(programName) };
 
 		var result = TestResult.Correct;
+		var stdout = "";
+		var stdoutExpected = File.ReadAllText($"{Name}/out");
 
 		try{
 			process.Start();
@@ -111,8 +123,8 @@ public class Test{
 				process.WaitForExit();
 				result = TestResult.TimeExceeded;
 			} else{
-				// TODO stdout does not display
-				if( CorrectOutput(process) ) result = TestResult.Correct;
+				stdout = process.StandardOutput.ReadToEnd();
+				if( CorrectOutput(stdout, stdoutExpected) ) result = TestResult.Correct;
 				else result = TestResult.OutputMismatch;
 			}
 		}
@@ -121,16 +133,15 @@ public class Test{
 		}
 		finally{
 			int exitCode = process.ExitCode;
-			string stdout = process.StandardOutput.ReadToEnd();
+			// string stdout = process.StandardOutput.ReadToEnd();
 			string stderr = process.StandardError.ReadToEnd();
 			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
-			Log = new TestLog(Name, exitCode, result, stdout, stderr, points, maxPoints);
+			Log = new TestLog(Name, exitCode, result, stdout, stderr, points, maxPoints, stdoutExpected);
 		}
 
 		return (TestLog)Log;
 	}
-	// TODO public string Interpreter;
 
 	public class Builder{
 		private Test test;

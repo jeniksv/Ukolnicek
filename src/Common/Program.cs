@@ -2,6 +2,7 @@
 using Ukolnicek.Testing;
 using Ukolnicek.Communication;
 
+Console.WriteLine("Ignore ...");
 /*
 var task = new FileInfo("task.md");
 Assignment.Create("A1", task);
@@ -32,6 +33,8 @@ a2.AddTest("Test1", fout, 1, 2000, fin, null);
 */
 //a2.RunTests("Data/Users/Temp/prime.py");
 //Console.WriteLine(a2.PointsTotal);
+/*
 var a = new Assignment("Prime");
 var result = a.RunTests("Data/Users/Temp/prime.py");
 Console.WriteLine();
+*/
