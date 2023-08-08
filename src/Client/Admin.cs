@@ -160,19 +160,19 @@ public class Admin : User{
 	private string ShowGroup(string[] args){
 		Notify( Request.Create(RequestEnum.ShowGroup, args[0]) );
 		var response = GetResponse<string>();
-		return response.Data;
+		return response.Data!;
 	}
 
 	private string[] ShowGroups(){
 		Notify( Request.Create(RequestEnum.ShowGroups) );
 		var response = GetResponse<string[]>();
-		return response.Data;
+		return response.Data!;
 	}
 
 	private string[] ShowUsers(){
 		Notify( Request.Create(RequestEnum.ShowUsers) );
 		var response = GetResponse<string[]>();
-		return response.Data;
+		return response.Data!;
 	}
 
 	private void RemoveGroup(string[] args){

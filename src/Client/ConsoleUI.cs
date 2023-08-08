@@ -5,11 +5,17 @@ using Ukolnicek.Testing;
 namespace Ukolnicek.Client;
 
 public class ConsoleUI : IUserInterface {
-	private Dictionary<string, RequestEnum> commandOptions;
-	private User user;
+	private Dictionary<string, RequestEnum>? commandOptions;
+	private User? user;
 	private ConsoleReader reader;
 
 	public ConsoleUI(){
+		reader = new ConsoleReader();
+	}
+
+	public void SetUser(User u){
+		user = u;
+
 		commandOptions = new Dictionary<string, RequestEnum> {
 			{"show-assignment", RequestEnum.ShowAssignment},
 			{"show-assignments", RequestEnum.ShowAssignments},
@@ -18,12 +24,6 @@ public class ConsoleUI : IUserInterface {
 			{"add-solution", RequestEnum.AddSolution},
 			{"exit", RequestEnum.Exit},
 		};
-
-		reader = new ConsoleReader();
-	}
-
-	public void SetUser(User u){
-		user = u;
 
 		var adminOptions = new Dictionary<string, RequestEnum> {
 			{"show-group", RequestEnum.ShowGroup},
@@ -52,8 +52,6 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	public void MainLoop(){
-		if( user == null ) return;
-
 		bool running = true;
 
 		while( running ){
@@ -136,7 +134,7 @@ public class ConsoleUI : IUserInterface {
 
 	public void ShowSolution(AssignmentResult result){
 		foreach(var testLog in result.TestLogs){
-			Console.Write($"Test: {ExtractName(testLog.Name)}");
+			Console.Write($"{ExtractName(testLog.Name)}");
 			
 			if( testLog.Result == TestResult.Correct ){
 				Console.WriteLine(" ... OK");
@@ -220,7 +218,7 @@ public interface IConsoleReader{
 }
 
 public class ConsoleReader{
-	private Dictionary<string, RequestEnum> commandOptions { get; set; }
+	private Dictionary<string, RequestEnum>? commandOptions { get; set; }
 	private bool userAdmin { get; set; }
 	private string username { get; set; }
 
@@ -356,6 +354,7 @@ public class ConsoleReader{
 			if( key.Key == ConsoleKey.Tab ){
 				command = TabMatch(command);
 			} else if( key.Key == ConsoleKey.Backspace ){
+				// TODO condition
 				command = DeleteChar(command);
 			} else {
 				command += key.KeyChar;

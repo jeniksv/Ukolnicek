@@ -122,10 +122,12 @@ public class Test{
 				process.Kill();
 				process.WaitForExit();
 				result = TestResult.TimeExceeded;
-			} else{
+			} else if( process.ExitCode == 0 ){
 				stdout = process.StandardOutput.ReadToEnd();
 				if( CorrectOutput(stdout, stdoutExpected) ) result = TestResult.Correct;
 				else result = TestResult.OutputMismatch;
+			} else {
+				result = TestResult.ExceptionError;	
 			}
 		}
 		catch( Exception ex ){
