@@ -44,6 +44,9 @@ public abstract class User : IDisposable{
 			case RequestEnum.Exit:
 				Notify( Request.Create(RequestEnum.Exit) ); // TODO
 				break;
+			case RequestEnum.DownloadSolution:
+				DownloadSolution(args);
+				break;
 			}
 
 			return data;
@@ -58,7 +61,7 @@ public abstract class User : IDisposable{
 		Notify( Request.Create(RequestEnum.AddSolution, data) );
 	}
 
-	protected string[] ShowAssignments(){ // TODO
+	protected string[] ShowAssignments(){
 		Notify( Request.Create(RequestEnum.ShowAssignments) );
 		var response = GetResponse<string[]>();
 		return response.Data;
@@ -76,10 +79,34 @@ public abstract class User : IDisposable{
 		return response.Data;
 	}
 
-	protected string ShowTaskDescription(string[] args){ // TODO
+	protected string ShowTaskDescription(string[] args){
 		Notify( Request.Create(RequestEnum.ShowTaskDescription, args[0]));
 		var response = GetResponse<string>();
 		return response.Data;
+	}
+
+	private string SafeFileName(string name){
+		if( !File.Exists(name) ) return name;
+
+		var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(name);
+		var fileExtension = Path.GetExtension(name);
+
+		int counter = 1;
+
+		while(File.Exists($"{fileNameWithoutExtension}_{counter}{fileExtension}")){
+			counter++;
+		}
+
+		return $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+	}
+
+	protected void DownloadSolution(string[] args){
+		Notify( Request.Create(RequestEnum.DownloadSolution, args));
+
+		var fileName = GetResponse<string>();
+		var contents = GetResponse<byte[]>();
+		
+		File.WriteAllBytes(SafeFileName(fileName.Data), contents.Data);
 	}
 
 	protected IResponse<T> GetResponse<T>(){
@@ -95,7 +122,7 @@ public abstract class User : IDisposable{
 ///	 Factory for creating users.
 /// </summary>
 public static class Client{
-	private static string ip = "10.24.180.46";
+	private static string ip = "192.168.0.199";
 	private static int port = 12345;
 
 	public static User? SignIn(IUserInterface ui){

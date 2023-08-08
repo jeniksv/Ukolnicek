@@ -10,7 +10,7 @@ namespace Ukolnicek.Server;
 // TODO mutexes for admin operations
 // TODO cache created assignments etc
 public class TcpUser : IDisposable{
-	public string Name { get; set; }
+	public string? Name { get; set; }
 	private readonly IObjectTransfer transfer;
 	private bool isAdmin = false;
 
@@ -56,7 +56,11 @@ public class TcpUser : IDisposable{
 
 			if(request.Type != RequestEnum.Login) Console.WriteLine($"{Name} - {request.Type}");
 			
-			HandleRequest(request); // TODO handle exceptions
+			try{	
+				HandleRequest(request); // TODO handle exceptions
+			} catch(Exception e){
+				Console.WriteLine($"{Name} - {e.Message}");
+			}
 		}
 	}
 
@@ -124,6 +128,9 @@ public class TcpUser : IDisposable{
 				break;
 			case RequestEnum.ShowUsers:
 				ShowUsers(request);
+				break;
+			case RequestEnum.DownloadSolution:
+				DownloadSolution(request);
 				break;
 		}
 	}
@@ -308,6 +315,31 @@ public class TcpUser : IDisposable{
 		if( File.Exists($"Data/Users/Groups/{groupName}") ) {
 			File.Delete($"Data/Users/Groups/{groupName}");
 		}
+	}
+
+	private string FindProgramName(string assignmentName, string solutionName){
+		var directory = $"Data/Users/{Name}/{assignmentName}/{solutionName}";
+
+		foreach(var file in Directory.GetFiles(directory)){
+			// TODO not in set
+			if(Path.GetFileName(file) != "result.json"){
+				return file;
+			}		
+		}
+
+		throw new InvalidOperationException();
+	}
+
+	private void DownloadSolution(IRequest<object> request){
+		var data = GetData<string[]>(request);
+		var assignmentName = data[0];
+		var solutionName = data[1];
+
+		var solutionFile = FindProgramName(assignmentName, solutionName); 
+		var contents = File.ReadAllBytes($"{solutionFile}");
+
+		transfer.Send( new Response<string> {Data = Path.GetFileName(solutionFile)} );
+		transfer.Send( new Response<byte[]> {Data = contents} );
 	}
 
 	private T GetData<T>(IRequest<object> update){

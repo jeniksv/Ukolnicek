@@ -23,6 +23,7 @@ public class ConsoleUI : IUserInterface {
 			{"show-task-description", RequestEnum.ShowTaskDescription},
 			{"add-solution", RequestEnum.AddSolution},
 			{"exit", RequestEnum.Exit},
+			{"download-solution", RequestEnum.DownloadSolution},
 		};
 
 		var adminOptions = new Dictionary<string, RequestEnum> {
@@ -59,8 +60,13 @@ public class ConsoleUI : IUserInterface {
 
 			if( command == RequestEnum.Exit ) break;
 
-			var data = user.HandleCommand(command, args);
-			
+			object data = null;
+
+			try{
+				data = user.HandleCommand(command, args);
+			} catch( Exception ){
+				Console.WriteLine("Invalid arguments");
+			}
 			// TODO tohle zabal do funkce ShowResponse();
 			switch( command ){
 				case RequestEnum.ShowAssignments:
@@ -288,6 +294,7 @@ public class ConsoleReader{
 
         private void HelpCommand(){
                 Console.WriteLine("exit");
+		Console.WriteLine("download-solution [assignment name] [solution name]");
                 if( userAdmin ){
                 Console.WriteLine("show-users");
                 Console.WriteLine("show-groups");

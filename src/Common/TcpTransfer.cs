@@ -38,6 +38,7 @@ public class JsonTcpTransfer : IObjectTransfer{
 		stream.Write(jsonBytes, 0, jsonBytes.Length);
 	}
 
+	// TODO timeout versin ...
 	public T Receive<T>(){
 		if( stream == null ) throw new InvalidOperationException("stream is null");
 	

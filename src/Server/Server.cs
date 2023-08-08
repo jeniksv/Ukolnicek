@@ -25,6 +25,7 @@ public class Server : IDisposable{
 			Console.WriteLine($"Client {client.Client.RemoteEndPoint} connected");
 			
 			var newClient = new TcpUser(client);
+			#pragma warning disable 4014
 			Task.Run(() => newClient.ClientLoop());
 			clients.Add(newClient);
 		}

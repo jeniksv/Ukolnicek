@@ -35,6 +35,8 @@ public enum RequestEnum{
 	RemoveTaskDescription,
 	RemoveGroup,
 
+	DownloadSolution,
+
 	UpdatePoints, // TODO
 
 	/*
