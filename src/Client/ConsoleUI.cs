@@ -180,9 +180,6 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	public void ShowAssignment(string[] assignment){
-		ShowTaskDescription(assignment[0]);
-		Console.WriteLine();
-
 		for(int i=1; i < assignment.Length; i++){
 			Console.WriteLine(ExtractName(assignment[i])); // TODO display basic info about solution
 		}
