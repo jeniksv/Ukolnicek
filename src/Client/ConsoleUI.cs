@@ -246,7 +246,10 @@ public class ConsoleReader{
         }
 
         private void ShowPrompt(){
-                Console.Write($"{username} > ");
+                Console.ForegroundColor = ConsoleColor.Green;
+		Console.Write($"{username}@Ukolnicek");
+		Console.ResetColor();
+		Console.Write($"$ ");
         }
 
         private string TabMatch(string prefix){
