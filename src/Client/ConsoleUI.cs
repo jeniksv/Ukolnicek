@@ -7,6 +7,7 @@ namespace Ukolnicek.Client;
 public class ConsoleUI : IUserInterface {
 	private Dictionary<string, RequestEnum> commandOptions;
 	private User user;
+	private ConsoleReader reader;
 
 	public ConsoleUI(){
 		commandOptions = new Dictionary<string, RequestEnum> {
@@ -17,6 +18,8 @@ public class ConsoleUI : IUserInterface {
 			{"add-solution", RequestEnum.AddSolution},
 			{"exit", RequestEnum.Exit},
 		};
+
+		reader = new ConsoleReader();
 	}
 
 	public void SetUser(User u){
@@ -26,17 +29,17 @@ public class ConsoleUI : IUserInterface {
 			{"show-group", RequestEnum.ShowGroup},
 			{"show-groups", RequestEnum.ShowGroups},
 			{"show-users", RequestEnum.ShowUsers},
-                        {"add-assignment", RequestEnum.AddAssignment},
-                        {"add-test", RequestEnum.AddTest},
-                        {"add-task-description", RequestEnum.AddTaskDescription},
+			{"add-assignment", RequestEnum.AddAssignment},
+			{"add-test", RequestEnum.AddTest},
+			{"add-task-description", RequestEnum.AddTaskDescription},
 			{"add-admin", RequestEnum.AddAdmin},
 			{"add-group", RequestEnum.AddGroup},
-                        {"remove-assignment", RequestEnum.RemoveAssignment},
-                        {"remove-test", RequestEnum.RemoveTest},
-                        {"remove-task-description", RequestEnum.RemoveTaskDescription},
+			{"remove-assignment", RequestEnum.RemoveAssignment},
+			{"remove-test", RequestEnum.RemoveTest},
+			{"remove-task-description", RequestEnum.RemoveTaskDescription},
 			{"remove-group", RequestEnum.RemoveGroup},
-                        {"assign-task", RequestEnum.AssignTask},
-                        {"unassign-task", RequestEnum.UnassignTask},
+			{"assign-task", RequestEnum.AssignTask},
+			{"unassign-task", RequestEnum.UnassignTask},
 		};
 
 		if(user is Admin){
@@ -44,6 +47,8 @@ public class ConsoleUI : IUserInterface {
 				commandOptions[pair.Key] = pair.Value;
 			}	
 		}
+
+		reader.SetPropertiesOptions(user.Name, user is Admin, commandOptions);
 	}
 
 	public void MainLoop(){
@@ -52,7 +57,7 @@ public class ConsoleUI : IUserInterface {
 		bool running = true;
 
 		while( running ){
-			var command = GetCommand(out string[] args);
+			var command = reader.GetCommand(out string[] args);
 
 			if( command == RequestEnum.Exit ) break;
 
@@ -123,136 +128,6 @@ public class ConsoleUI : IUserInterface {
 
 	public void InvalidLogin(){
 		Console.WriteLine("Permission denied, please try again.");
-	}
-
-	private string TabMatch(string prefix){
-		var result = new List<string>();
-
-		foreach(var pair in commandOptions){
-			if( pair.Key.StartsWith(prefix) ){
-				result.Add(pair.Key);
-			}
-		}
-
-		if( result.Count == 0 ){
-			return prefix;
-		}
-		
-		if( result.Count == 1 ){
-			for(int i=0; i<prefix.Length; i++){
-				Console.Write("\b \b");
-			}
-
-			Console.Write(result[0]);
-			
-			return result[0];
-		}
-
-		Console.WriteLine();
-
-		foreach(var command in result){
-			Console.Write($"{command} ");
-		}
-
-		Console.WriteLine();
-		ShowPrompt();
-		prefix = LongestCommonPrefix(result);
-		Console.Write(prefix);
-		return prefix;
-	}
-
-	private string LongestCommonPrefix(List<string> commands){
-		commands.Sort();
-		var first = commands[0];
-		var last = commands[^1];
-
-		for(int i=0; i < Math.Min(first.Length, last.Length); i++){
-			if( first[i] != last[i] ){
-				return first.Substring(0, i);
-			}
-		}
-
-		return first.Substring(0, Math.Min(first.Length, last.Length));
-	}
-
-	private void ShowPrompt(){
-		Console.Write($"{user.Name} > ");
-	}
-
-	private string DeleteChar(string command){
-		if( command.Length > 0 ){
-			command = command.Remove(command.Length - 1);
-			Console.Write("\b \b");
-			return command;
-		}
-
-		return "";
-	}
-
-	private void HelpCommand(){
-		Console.WriteLine("exit");
-		if(user is Admin){
-		Console.WriteLine("show-users");
-		Console.WriteLine("show-groups");
-		Console.WriteLine("show-group [group name]");
-		}
-		Console.WriteLine("show-assignment [assignment name]");
-		Console.WriteLine("show-assignments");
-		Console.WriteLine("show-solution [assignment name] [solution name]");
-		
-		Console.WriteLine("add-solution [assignment name] [file]");
-
-		if(user is Admin){
-		Console.WriteLine("add-assignment [assignment name]");
-		Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
-		Console.WriteLine("add-task-description [assignment name] [file]");
-		Console.WriteLine("add-admin [student name]");
-		Console.WriteLine("add-group [group name] [student name] ...");
-		
-		Console.WriteLine("assign-task [assignment name] [student name]");
-		Console.WriteLine("unassign-task [assignment name] [student name]");
-		
-		Console.WriteLine("remove-assignment [assignment name]");
-		Console.WriteLine("remove-test [assignment name] [test name]");
-		Console.WriteLine("remove-task-description [assignment name]");
-		Console.WriteLine("remove-group [group name]");
-		}
-	}
-
-	public RequestEnum GetCommand(out string[] args){
-		string command = "";
-		ConsoleKeyInfo key;
-
-		ShowPrompt();
-		
-		while( true ){
-			key = Console.ReadKey(true);
-			if( key.Key == ConsoleKey.Enter ){
-				Console.WriteLine();
-				var commandSplit = command.Split();
-				var request = commandSplit[0];
-				args = new string[commandSplit.Length - 1];
-				Array.Copy(commandSplit, 1, args, 0, commandSplit.Length - 1);
-					
-				if( commandOptions.ContainsKey(request) ){
-					return commandOptions[request];
-				} else {
-					if( request == "help" ) HelpCommand();
-					else if(request != "" ) Console.WriteLine("Invalid command");
-					return GetCommand(out args);
-				}
-			}
-
-			// TODO arrow keys add command history
-			if( key.Key == ConsoleKey.Tab ){
-				command = TabMatch(command);
-			} else if( key.Key == ConsoleKey.Backspace ){
-				command = DeleteChar(command);
-			} else {
-				command += key.KeyChar;
-				Console.Write(key.KeyChar);
-			}
-		}
 	}
 
 	private string ExtractName(string name){
@@ -334,6 +209,155 @@ public class ConsoleUI : IUserInterface {
 
 		foreach(var user in users){
 			if(user != "Data/Users/Groups") Console.WriteLine(ExtractName(user));
+		}
+	}
+}
+
+
+// TODO refactor
+public interface IConsoleReader{
+	 RequestEnum GetCommand(out string[] args);
+}
+
+public class ConsoleReader{
+	private Dictionary<string, RequestEnum> commandOptions { get; set; }
+	private bool userAdmin { get; set; }
+	private string username { get; set; }
+
+
+	public void SetPropertiesOptions(string name, bool admin, Dictionary<string, RequestEnum> options){
+		username = name;
+		commandOptions = options;
+		userAdmin = admin;
+	}
+
+        private string LongestCommonPrefix(List<string> commands){
+                commands.Sort();
+                var first = commands[0];
+                var last = commands[^1];
+
+                for(int i=0; i < Math.Min(first.Length, last.Length); i++){
+                        if( first[i] != last[i] ){
+                                return first.Substring(0, i);
+                        }
+                }
+
+                return first.Substring(0, Math.Min(first.Length, last.Length));
+        }
+
+        private void ShowPrompt(){
+                Console.Write($"{username} > ");
+        }
+
+        private string TabMatch(string prefix){
+                var result = new List<string>();
+
+                foreach(var pair in commandOptions){
+                        if( pair.Key.StartsWith(prefix) ){
+                                result.Add(pair.Key);
+                        }
+                }
+
+                if( result.Count == 0 ){
+                        return prefix;
+                }
+
+                if( result.Count == 1 ){
+                        for(int i=0; i<prefix.Length; i++){
+                                Console.Write("\b \b");
+                        }
+
+                        Console.Write(result[0]);
+
+                        return result[0];
+                }
+
+                Console.WriteLine();
+
+                foreach(var command in result){
+                        Console.Write($"{command} ");
+                }
+
+                Console.WriteLine();
+                ShowPrompt();
+                prefix = LongestCommonPrefix(result);
+                Console.Write(prefix);
+                return prefix;
+        }
+
+        private void HelpCommand(){
+                Console.WriteLine("exit");
+                if( userAdmin ){
+                Console.WriteLine("show-users");
+                Console.WriteLine("show-groups");
+                Console.WriteLine("show-group [group name]");
+                }
+                Console.WriteLine("show-assignment [assignment name]");
+                Console.WriteLine("show-assignments");
+                Console.WriteLine("show-solution [assignment name] [solution name]");
+
+                Console.WriteLine("add-solution [assignment name] [file]");
+
+                if( userAdmin ){
+                Console.WriteLine("add-assignment [assignment name]");
+                Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
+                Console.WriteLine("add-task-description [assignment name] [file]");
+                Console.WriteLine("add-admin [student name]");
+                Console.WriteLine("add-group [group name] [student name] ...");
+
+                Console.WriteLine("assign-task [assignment name] [student name]");
+                Console.WriteLine("unassign-task [assignment name] [student name]");
+
+                Console.WriteLine("remove-assignment [assignment name]");
+                Console.WriteLine("remove-test [assignment name] [test name]");
+                Console.WriteLine("remove-task-description [assignment name]");
+                Console.WriteLine("remove-group [group name]");
+                }
+        }
+
+        private string DeleteChar(string command){
+                if( command.Length > 0 ){
+                        command = command.Remove(command.Length - 1);
+                        Console.Write("\b \b");
+                        return command;
+                }
+
+                return "";
+        }
+
+	public RequestEnum GetCommand(out string[] args){
+		string command = "";
+		ConsoleKeyInfo key;
+
+		ShowPrompt();
+
+		while( true ){
+			key = Console.ReadKey(true);
+			if( key.Key == ConsoleKey.Enter ){
+				Console.WriteLine();
+				var commandSplit = command.Split();
+				var request = commandSplit[0];
+				args = new string[commandSplit.Length - 1];
+				Array.Copy(commandSplit, 1, args, 0, commandSplit.Length - 1);
+
+				if( commandOptions.ContainsKey(request) ){
+					return commandOptions[request];
+				} else {
+					if( request == "help" ) HelpCommand();
+					else if(request != "" ) Console.WriteLine("Invalid command");
+					return GetCommand(out args);
+				}
+			}
+
+			// TODO arrow keys add command history
+			if( key.Key == ConsoleKey.Tab ){
+				command = TabMatch(command);
+			} else if( key.Key == ConsoleKey.Backspace ){
+				command = DeleteChar(command);
+			} else {
+				command += key.KeyChar;
+				Console.Write(key.KeyChar);
+			}
 		}
 	}
 }

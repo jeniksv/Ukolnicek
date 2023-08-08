@@ -26,7 +26,5 @@ public interface IUserInterface {
 	void AccountExists();
 	void InvalidLogin();
 	void InvalidArguments();
-
-	RequestEnum GetCommand(out string[] args);
 }
 
