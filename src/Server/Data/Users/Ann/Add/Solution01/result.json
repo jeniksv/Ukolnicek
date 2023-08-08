@@ -1,1 +1,0 @@
-{"TestLogs":[{"Name":"Data/Assignments/Add/Test2","ExitCode":0,"Result":1,"Stdout":"2\n","StdoutExpected":"2\n","Stderr":"","Points":1,"MaxPoints":1},{"Name":"Data/Assignments/Add/Test1","ExitCode":0,"Result":1,"Stdout":"420\n","StdoutExpected":"420\n","Stderr":"","Points":1,"MaxPoints":1}],"CorrectTests":2,"IncorrectTests":0,"SkippedTests":0,"PointsTotal":2}
