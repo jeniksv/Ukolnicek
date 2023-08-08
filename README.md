@@ -48,26 +48,24 @@ dotnet run
 
 The Ukolnicek Console Application supports various commands for managing assignments, solutions, and user-related tasks. Below is a list of available commands:
 
-`exit`: Exit the application.
-`download-solution [assignment name] [solution name]`: Download a solution file for a specific assignment.
-`show-assignments`: Display a list of available assignments.
-`show-assignment [assignment name]`: Display details of a specific assignment.
-`show-solution [assignment name] [solution name]`: Display details of a solution for a specific assignment.
-`add-solution [assignment name] [file]`: Add a solution for a specific assignment.
-`show-users: Display a list of users (Admin-only).
-`
-
-`show-groups`: Display a list of groups (Admin-only).
-`show-group [group name]`: Display details of a specific group (Admin-only).
-`add-admin [student name]`: Add a user as an admin (Admin-only).
-`add-group [group name] [student name] ... `: Add a group with specified students (Admin-only).
-`assign-task [assignment name] [student name]`: Assign a task to a student (Admin-only).
-`unassign-task [assignment name] [student name]`: Unassign a task from a student (Admin-only).
-`remove-assignment [assignment name]`: Remove a specific assignment (Admin-only).
-`remove-test [assignment name] [test name]`: Remove a test for a specific assignment (Admin-only).
-`remove-task-description [assignment name]`: Remove the description of a specific assignment (Admin-only).
-`remove-group [group name]`: Remove a specific group (Admin-only).
-`help`: Display a list of available commands.
+- `exit`: Exit the application.
+- `download-solution [assignment name] [solution name]`: Download a solution file for a specific assignment.
+- `show-assignments`: Display a list of available assignments.
+- `show-assignment [assignment name]`: Display details of a specific assignment.
+- `show-solution [assignment name] [solution name]`: Display details of a solution for a specific assignment.
+- `add-solution [assignment name] [file]`: Add a solution for a specific assignment.
+- `show-users`: Display a list of users (Admin-only)
+- `show-groups`: Display a list of groups (Admin-only).
+- `show-group [group name]`: Display details of a specific group (Admin-only).
+- `add-admin [student name]`: Add a user as an admin (Admin-only).
+- `add-group [group name] [student name] ... `: Add a group with specified students (Admin-only).
+- `assign-task [assignment name] [student name]`: Assign a task to a student (Admin-only).
+- `unassign-task [assignment name] [student name]`: Unassign a task from a student (Admin-only).
+- `remove-assignment [assignment name]`: Remove a specific assignment (Admin-only).
+- `remove-test [assignment name] [test name]`: Remove a test for a specific assignment (Admin-only).
+- `remove-task-description [assignment name]`: Remove the description of a specific assignment (Admin-only).
+- `remove-group [group name]`: Remove a specific group (Admin-only).
+- `help`: Display a list of available commands.
 
 
 
