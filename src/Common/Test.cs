@@ -9,8 +9,15 @@ namespace Ukolnicek.Testing;
 // ITest { void Run; ... } it should be abstract class because implementation for both test would be really similar 
 // TODO strategy pattern for different programming languages
 
+/// <summary>
+/// Represents the possible results of a test.
+/// </summary>
 public enum TestResult { NotExecuted, Correct, OutputMismatch, TimeExceeded, ExceptionError, CompilationError }
 
+
+/// <summary>
+/// Represents result of one test. Expected output and maximum points are included.
+/// </summary>
 public readonly struct TestLog{
 	public readonly string Name { get; }
 	public readonly int ExitCode { get; }
@@ -104,6 +111,11 @@ public class Test{
 		return actual == expected;
 	}
 
+	/// <summary>
+	/// Runs the test using the specified program.
+	/// </summary>
+	/// <param name="programName">The name of the program to run.</param>
+	/// <returns>The test log containing the results.</returns>
 	public TestLog Run(string programName){
 		var process = new Process(){ StartInfo = SetProcessStartInfo(programName) };
 
@@ -145,6 +157,9 @@ public class Test{
 		return (TestLog)Log;
 	}
 
+	/// <summary>
+	/// A builder class for creating Test instances.
+	/// </summary>
 	public class Builder{
 		private Test test;
 
