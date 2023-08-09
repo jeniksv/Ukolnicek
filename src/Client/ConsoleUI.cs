@@ -290,21 +290,16 @@ public class ConsoleReader{
         }
 
         private void HelpCommand(){
-                Console.WriteLine("exit");
-		Console.WriteLine("download-solution [assignment name] [solution name]");
                 if( userAdmin ){
                 Console.WriteLine("show-users");
                 Console.WriteLine("show-groups");
                 Console.WriteLine("show-group [group name]");
-                }
-                Console.WriteLine("show-assignment [assignment name]");
-                Console.WriteLine("show-assignments");
-                Console.WriteLine("show-solution [assignment name] [solution name]");
-
+		Console.WriteLine("show-assignment [assignment name] --user [user name]");
+		Console.WriteLine("show-assignments");
+		Console.WriteLine("show-solution [assignment name] [solution name] --user [user name]");
+		Console.WriteLine("download-solution [assignment name] [solution name] --user [user name]");
                 Console.WriteLine("add-solution [assignment name] [file]");
-
-                if( userAdmin ){
-                Console.WriteLine("add-assignment [assignment name]");
+		Console.WriteLine("add-assignment [assignment name]");
                 Console.WriteLine("add-test [assignment name] [test name] --out [file] --in [file] --args [file] --time --points");
                 Console.WriteLine("add-task-description [assignment name] [file]");
                 Console.WriteLine("add-admin [student name]");
@@ -317,8 +312,15 @@ public class ConsoleReader{
                 Console.WriteLine("remove-test [assignment name] [test name]");
                 Console.WriteLine("remove-task-description [assignment name]");
                 Console.WriteLine("remove-group [group name]");
-                }
-        }
+                } else {
+		Console.WriteLine("show-assignment [assignment name]");
+		Console.WriteLine("show-assignments");
+		Console.WriteLine("show-solution [assignment name] [solution name]");
+		Console.WriteLine("add-solution [assignment name] [file]");
+		Console.WriteLine("download-solution [assignment name] [solution name]");
+		Console.WriteLine("exit");
+		}
+	}
 
         private string DeleteChar(string command){
                 if( command.Length > 0 ){

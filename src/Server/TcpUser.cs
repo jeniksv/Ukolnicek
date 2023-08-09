@@ -166,21 +166,67 @@ public class TcpUser : IDisposable{
 		File.WriteAllText($"Data/Users/{Name}/{assignmentName}/{solutionName}/result.json", json);
 	}
 
-	private void AssignTask(IRequest<object> request){
-		// TODO check if second argument is not name of group
-		var data = GetData<string[]>(request); // assignmentName, studentName
+	// TODO use it everywhere
+	private bool UserExists(string name){
+		return Directory.Exists($"Data/Users/{name}");
+	}
 
-		var directory = $"Data/Users/{data[1]}/{data[0]}";
-		if( !Directory.Exists(directory) ) Directory.CreateDirectory(directory);
+	private bool GroupExists(string name){
+		return File.Exists($"Data/Users/Groups/{name}");
+	}
+
+	private bool AssignmentExists(string name){
+		return Directory.Exists($"Data/Assignments/{name}");
+	}
+
+	private bool TaskDescriptionExists(string assignmentName){
+		return File.Exists($"Data/Assignments/{assignmentName}/README.md");
+	}
+
+	private string[] UsersInGroup(string name){
+		return File.ReadAllLines($"Data/Users/Groups/{name}");
+	}
+
+	private bool HasAssignment(string userName, string assignmentName){
+		return Directory.Exists($"Data/Users/{userName}/{assignmentName}");
+	}
+
+	private void AssignTask(IRequest<object> request){
+		var data = GetData<string[]>(request); // assignmentName, studentName
+		var assignmentName = data[0];
+		var groupName = data[1];
+		
+		if( GroupExists(groupName) ){
+			foreach(var user in UsersInGroup(groupName)){
+				if(UserExists(user) && !HasAssignment(user, assignmentName)){
+					Directory.CreateDirectory($"Data/Users/{user}/{assignmentName}"); // TODO abstraction
+				}
+			}
+		} else {
+			var user = groupName;
+			if(UserExists(user) && !HasAssignment(user, assignmentName)){
+				Directory.CreateDirectory($"Data/Users/{user}/{assignmentName}");
+			}
+		}
 	}
 
 	private void UnassignTask(IRequest<object> request){
-		// TODO check for group
-		var data = GetData<string[]>(request); // assignmentName, studentName
-		
-		var directory = $"Data/Users/{data[1]}/{data[0]}";
-		
-		if( Directory.Exists(directory) ) Directory.Delete(directory, true);
+		var data = GetData<string[]>(request);
+		var assignmentName = data[0];
+		var groupName = data[1];
+
+		if( GroupExists(groupName) ){
+			foreach(var user in UsersInGroup(groupName)){
+				if(UserExists(user) && HasAssignment(user, assignmentName)){
+					Directory.Delete($"Data/Users/{user}/{assignmentName}", true);
+				}
+			}
+		} else {
+			var user = groupName;
+			if(UserExists(user) && HasAssignment(user, assignmentName)){
+				Directory.Delete($"Data/Users/{user}/{assignmentName}", true);
+			}
+		}
 	}
 
 	private void AddAssignment(IRequest<object> request){
@@ -233,6 +279,7 @@ public class TcpUser : IDisposable{
 	}
 
 	private void ShowSolution(IRequest<object> request){
+		//TODO co tu posilam vole?
 		var solutionName = GetData<string>(request);
 		var json = File.ReadAllText($"Data/Users/{Name}/{solutionName}/result.json");
 		var assignmentResult = JsonConvert.DeserializeObject<AssignmentResult>(json);
@@ -300,7 +347,7 @@ public class TcpUser : IDisposable{
 		var data = GetData<string[]>(request);
 		var groupName = data[0];
 
-		if( !File.Exists($"Data/Users/Groups/{groupName}") ){
+		if( !GroupExists(groupName) ){
 			using(StreamWriter writer = new StreamWriter($"Data/Users/Groups/{groupName}")){
 				for(int i=1; i<data.Length; i++){
 					writer.WriteLine(data[i]);

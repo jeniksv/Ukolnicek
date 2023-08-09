@@ -122,7 +122,7 @@ public abstract class User : IDisposable{
 ///	 Factory for creating users.
 /// </summary>
 public static class Client{
-	private static string ip = "192.168.0.199";
+	private static string ip = "10.24.180.46";
 	private static int port = 12345;
 
 	public static User? SignIn(IUserInterface ui){

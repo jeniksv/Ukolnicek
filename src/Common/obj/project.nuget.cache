@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Kxss8Nr0CZK/e6nyBFgzHfCt3Cm2UIcHkQj+4i05kjFmQguHqS8Twwh4X3pdjnZZSV3BXiqaqbCqGzB6qOt6Uw==",
+  "dgSpecHash": "S0LRDEb6JNry+h9PWjiCSn/pIjJWyAT6xF8UC3/xl+cnPL3XoLnOVVW2mhEl2oabG41smOWoOjj5HbIBNFmADg==",
   "success": true,
-  "projectFilePath": "/home/jenda/Ukolnicek/src/Common/Common.csproj",
+  "projectFilePath": "/home/jan/Ukolnicek/src/Common/Common.csproj",
   "expectedPackageFiles": [
-    "/home/jenda/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+    "/home/jan/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
   ],
   "logs": []
 }
