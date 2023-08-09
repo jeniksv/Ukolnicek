@@ -104,7 +104,7 @@ add-admin Ann
 
 
 
-On first start, there are prepared tasks with names Prime and Palindrome (and some test also)
+On first start, there are prepared tasks with names Prime and Palindrome (and some test also) and user account Ann with password 123.
 
 Add solution:
 
@@ -139,5 +139,5 @@ If you encounter any issues while using the Ukolnicek Console Application, consi
 ### Additional Resources
 For more information and assistance, you can refer to the following resources:
 
-Documentation: [Link to Full Documentation]
-Contact Support: [honous.svojan@gmail.com]
+Documentation: [Full Documentation](src/README.md)
+Contact Support: [Mail](honous.svojan@gmail.com)

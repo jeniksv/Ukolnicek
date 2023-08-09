@@ -107,7 +107,6 @@ public class Test{
 	private bool CorrectOutput(string actual, string expected){
 		if( !expectedOutputFileName ) return false;
 
-		// kdyz si ten string musim pamatovat v logu, tak s tim nic nenadelam no
 		return actual == expected;
 	}
 

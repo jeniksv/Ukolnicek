@@ -1,27 +1,34 @@
-## Application Architecture Documentation
-### Table of Contents
+# Application Architecture Documentation
+
+## Table of Contents
 
 - Introduction
 - Overall Architecture
 - Client-Side Architecture
-- User Interface Layer
-- User Management Layer
-- Communication Layer
+  - User Interface Layer
+  - User Management Layer
+  - Communication Layer
+
 - Server-Side Architecture
-- Server Core Layer
-- Communication Layer
-- User Management Layer
-- Data Storage Layer
+  - Server Core Layer
+  - Communication Layer
+  - User Management Layer
+  - Data Storage Layer
+
 - Conclusion
 
-### Introduction
+## Introduction
+
 The Application Architecture Documentation provides an overview of the design and structure of the application. It describes how the client and server components are organized, how they interact, and the overall flow of data and operations within the system.
 
-### Overall Architecture
+## Overall Architecture
+
 The application follows a client-server architecture, where clients interact with a central server to perform various tasks. The server manages user authentication, assignment handling, and communication between users.
 
-### Client-Side Architecture
+## Client-Side Architecture
+
 #### User Interface Layer
+
 The User Interface (UI) layer is responsible for presenting information to users and capturing user inputs. It consists of a console-based interface that allows users to sign in, create accounts, and interact with assignments and solutions.
 
 #### User Management Layer
@@ -30,17 +37,21 @@ The User Management layer handles user authentication and account creation. User
 #### Communication Layer
 The Communication layer facilitates communication between the client and the server. It handles the serialization and deserialization of data using JSON and manages the TCP connection for data transfer.
 
-### Server-Side Architecture
-Server Core Layer
+## Server-Side Architecture
+
+#### Server Core Layer
 The Server Core layer forms the heart of the server-side architecture. It listens for incoming client connections, manages client sessions, and dispatches requests to appropriate handlers. The Server Core ensures smooth communication between clients and other server components.
 
-### Communication Layer
+#### Communication Layer
+
 Similar to the client-side, the Communication layer on the server handles data serialization, deserialization, and TCP communication. It ensures reliable data exchange between the server and clients.
 
-### User Management Layer
+#### User Management Layer
+
 The User Management layer on the server is responsible for user authentication, account creation, and user session management. It interacts with the data storage layer to verify user credentials and manage user-related data.
 
-### Data Storage Layer
+#### Data Storage Layer
+
 The Data Storage layer handles the persistent storage of user accounts, assignments, solutions, and other relevant data. It communicates with the User Management layer to authenticate users and retrieve user-related information.
 
 ### Conclusion
