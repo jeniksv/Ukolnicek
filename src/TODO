@@ -1,9 +1,0 @@
--> other user actions
--> command line history
--> lepsi pouzivani groups
--> refactor ConsoleUI -> better parser and consoleReader
--> unittest add
--> bezpecnost (server si bude vytvaret snapshoty)
--> pridate time stamps
--> make it scriptable
--> smart tab completion
