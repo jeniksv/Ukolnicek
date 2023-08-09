@@ -68,6 +68,9 @@ public class Admin : User{
 			case RequestEnum.RemoveGroup:
 				RemoveGroup(args);
 				break;
+			case RequestEnum.DownloadSolution:
+				DownloadSolution(args);
+				break;
 		}
 
 		return data;

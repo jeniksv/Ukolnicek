@@ -180,6 +180,11 @@ public class ConsoleUI : IUserInterface {
 	}
 
 	public void ShowAssignment(string[] assignment){
+		if( assignment == null ){
+			InvalidArguments();
+			return;
+		}
+
 		for(int i=1; i < assignment.Length; i++){
 			Console.WriteLine(ExtractName(assignment[i])); // TODO display basic info about solution
 		}
@@ -295,7 +300,7 @@ public class ConsoleReader{
                 Console.WriteLine("show-groups");
                 Console.WriteLine("show-group [group name]");
 		Console.WriteLine("show-assignment [assignment name] --user [user name]");
-		Console.WriteLine("show-assignments");
+		Console.WriteLine("show-assignments --user [user name]");
 		Console.WriteLine("show-solution [assignment name] [solution name] --user [user name]");
 		Console.WriteLine("download-solution [assignment name] [solution name] --user [user name]");
                 Console.WriteLine("add-solution [assignment name] [file]");

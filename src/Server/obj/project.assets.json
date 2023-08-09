@@ -73,19 +73,19 @@
     ]
   },
   "packageFolders": {
-    "/home/jan/.nuget/packages/": {}
+    "/home/jenda/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/jan/Ukolnicek/src/Server/Server.csproj",
+      "projectUniqueName": "/home/jenda/Ukolnicek/src/Server/Server.csproj",
       "projectName": "Server",
-      "projectPath": "/home/jan/Ukolnicek/src/Server/Server.csproj",
-      "packagesPath": "/home/jan/.nuget/packages/",
-      "outputPath": "/home/jan/Ukolnicek/src/Server/obj/",
+      "projectPath": "/home/jenda/Ukolnicek/src/Server/Server.csproj",
+      "packagesPath": "/home/jenda/.nuget/packages/",
+      "outputPath": "/home/jenda/Ukolnicek/src/Server/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/jan/.nuget/NuGet/NuGet.Config"
+        "/home/jenda/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net7.0"
@@ -97,8 +97,8 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "projectReferences": {
-            "/home/jan/Ukolnicek/src/Common/Common.csproj": {
-              "projectPath": "/home/jan/Ukolnicek/src/Common/Common.csproj"
+            "/home/jenda/Ukolnicek/src/Common/Common.csproj": {
+              "projectPath": "/home/jenda/Ukolnicek/src/Common/Common.csproj"
             }
           }
         }

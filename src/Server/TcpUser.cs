@@ -179,8 +179,16 @@ public class TcpUser : IDisposable{
 		return Directory.Exists($"Data/Assignments/{name}");
 	}
 
+	private bool SolutionExists(string userName, string assignmentName, string solutionName){
+		return Directory.Exists($"Data/Users/{userName}/{assignmentName}/{solutionName}");
+	}
+
 	private bool TaskDescriptionExists(string assignmentName){
 		return File.Exists($"Data/Assignments/{assignmentName}/README.md");
+	}
+
+	private bool TestExists(string assignmentName, string testName){
+		return Directory.Exists($"Data/Assignments/{assignmentName}/{testName}");
 	}
 
 	private string[] UsersInGroup(string name){
@@ -249,6 +257,9 @@ public class TcpUser : IDisposable{
 		var argsBytes = (byte[])data[4];
 		var time = (int)(long)data[5]; // nechapu proc to musim napsat takhle
 		var points = (int)(long)data[6];
+
+		if( !AssignmentExists(assignmentName) ) return;
+		if( TestExists(assignmentName, testName) ) return;
 		
 		Assignment.AddTest(assignmentName, testName, outputBytes, inputBytes, argsBytes, time, points);
 	}
@@ -258,8 +269,7 @@ public class TcpUser : IDisposable{
 		if( isAdmin ){
 			assignments = Directory.GetDirectories($"Data/Assignments/");
 		} else{
-			// TODO admin should have all assignments in your directory
-			// TODO picovina, spatne hodnoty
+			// TODO 
 			assignments = Directory.GetDirectories($"Data/Users/{Name}");
 		}
 
@@ -267,23 +277,33 @@ public class TcpUser : IDisposable{
 	}
 
 	private void ShowAssignment(IRequest<object> request){
-		var assignmentName = GetData<string>(request);
-		
-		var response = new List<string>(){ Assignment.GetTaskDescription(assignmentName) };
-
-		foreach(var d in Directory.GetDirectories($"Data/Users/{Name}/{assignmentName}")){
-			response.Add(d);
+		var data = GetData<string[]>(request);
+		var assignmentName = data[0];
+		// TODO parser in ConsoleUI should handle this
+		var user = data.Length > 1 ? data[2] : Name;
+	
+		if( UserExists(user!) && AssignmentExists(assignmentName) && HasAssignment(user!, assignmentName) ){
+			var response = Directory.GetDirectories($"Data/Users/{user}/{assignmentName}");
+			transfer.Send( new Response<string[]> {Data = response} );
+		} else{
+			transfer.Send( new Response<string[]> {Data = null});
 		}
-		
-		transfer.Send( new Response<string[]> {Data = response.ToArray()} );
 	}
 
 	private void ShowSolution(IRequest<object> request){
-		//TODO co tu posilam vole?
-		var solutionName = GetData<string>(request);
-		var json = File.ReadAllText($"Data/Users/{Name}/{solutionName}/result.json");
-		var assignmentResult = JsonConvert.DeserializeObject<AssignmentResult>(json);
-		transfer.Send( new Response<AssignmentResult> { Data = assignmentResult } );	
+		var data = GetData<string[]>(request);
+		var assignmentName = data[0];
+		var solutionName = data[1];
+		// TODO parser in ConsoleUI should handle this
+		var user = data.Length > 2 ? data[3] : Name;
+
+		if( HasAssignment(user!, assignmentName) && SolutionExists(user!, assignmentName, solutionName) ){
+			var json = File.ReadAllText($"Data/Users/{user}/{assignmentName}/{solutionName}/result.json");
+			var assignmentResult = JsonConvert.DeserializeObject<AssignmentResult>(json);
+			transfer.Send( new Response<AssignmentResult> { Data = assignmentResult } );	
+		} else{
+			transfer.Send( new Response<string[]> {Data = null});
+		}		
 	}
 
 	private void ShowTaskDescription(IRequest<object> request){
@@ -364,8 +384,8 @@ public class TcpUser : IDisposable{
 		}
 	}
 
-	private string FindProgramName(string assignmentName, string solutionName){
-		var directory = $"Data/Users/{Name}/{assignmentName}/{solutionName}";
+	private string FindProgramName(string userName, string assignmentName, string solutionName){
+		var directory = $"Data/Users/{userName}/{assignmentName}/{solutionName}";
 
 		foreach(var file in Directory.GetFiles(directory)){
 			// TODO not in set
@@ -381,12 +401,19 @@ public class TcpUser : IDisposable{
 		var data = GetData<string[]>(request);
 		var assignmentName = data[0];
 		var solutionName = data[1];
+		// TODO parser in ConsoleUI should handle this
+		var user = data.Length > 2 ? data[3] : Name;
 
-		var solutionFile = FindProgramName(assignmentName, solutionName); 
-		var contents = File.ReadAllBytes($"{solutionFile}");
+		if( HasAssignment(user!, assignmentName) && SolutionExists(user!, assignmentName, solutionName) ){
+			var solutionFile = FindProgramName(user!, assignmentName, solutionName); 
+			var contents = File.ReadAllBytes($"{solutionFile}");
 
-		transfer.Send( new Response<string> {Data = Path.GetFileName(solutionFile)} );
-		transfer.Send( new Response<byte[]> {Data = contents} );
+			transfer.Send( new Response<string> {Data = Path.GetFileName(solutionFile)} );
+			transfer.Send( new Response<byte[]> {Data = contents} );
+		} else{
+			transfer.Send( new Response<byte[]> {Data = null} );
+			transfer.Send( new Response<byte[]> {Data = null} );
+		}
 	}
 
 	private T GetData<T>(IRequest<object> update){

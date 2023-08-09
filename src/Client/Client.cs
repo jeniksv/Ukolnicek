@@ -68,13 +68,13 @@ public abstract class User : IDisposable{
 	}
 
 	protected string[] ShowAssignment(string[] args){
-		Notify( Request.Create(RequestEnum.ShowAssignment, args[0]));
+		Notify( Request.Create(RequestEnum.ShowAssignment, args));
 		var response = GetResponse<string[]>(); // task description, list of solutions
 		return response.Data;
 	}
 
 	protected AssignmentResult ShowSolution(string[] args){
-		Notify( Request.Create(RequestEnum.ShowSolution, $"{args[0]}/{args[1]}"));
+		Notify( Request.Create(RequestEnum.ShowSolution, args));
 		var response = GetResponse<AssignmentResult>();
 		return response.Data;
 	}
@@ -106,7 +106,7 @@ public abstract class User : IDisposable{
 		var fileName = GetResponse<string>();
 		var contents = GetResponse<byte[]>();
 		
-		File.WriteAllBytes(SafeFileName(fileName.Data), contents.Data);
+		if(fileName != null) File.WriteAllBytes(SafeFileName(fileName.Data), contents.Data);
 	}
 
 	protected IResponse<T> GetResponse<T>(){
@@ -122,7 +122,7 @@ public abstract class User : IDisposable{
 ///	 Factory for creating users.
 /// </summary>
 public static class Client{
-	private static string ip = "10.24.180.46";
+	private static string ip = "192.168.0.199";
 	private static int port = 12345;
 
 	public static User? SignIn(IUserInterface ui){
