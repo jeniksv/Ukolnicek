@@ -6,7 +6,7 @@ public class Progam{
 	
 		User? user = args.Contains("--create") ? Client.CreateAccount(consoleUI) : Client.SignIn(consoleUI);
 		
-		if( user != null){	
+		if(user != null){	
 			consoleUI.SetUser(user);
 			consoleUI.MainLoop();
 		}

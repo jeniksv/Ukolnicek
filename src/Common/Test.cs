@@ -150,7 +150,7 @@ public class Test{
 			string stderr = process.StandardError.ReadToEnd();
 			int points = result == TestResult.Correct ? maxPoints : 0;
 			process.Close();
-			Log = new TestLog(Name, exitCode, result, stdout, stderr, points, maxPoints, stdoutExpected);
+			Log = new TestLog(Name!, exitCode, result, stdout, stderr, points, maxPoints, stdoutExpected);
 		}
 
 		return (TestLog)Log;

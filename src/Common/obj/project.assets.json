@@ -55,19 +55,19 @@
     ]
   },
   "packageFolders": {
-    "/home/jenda/.nuget/packages/": {}
+    "/home/jan/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/jenda/Ukolnicek/src/Common/Common.csproj",
+      "projectUniqueName": "/home/jan/Ukolnicek/src/Common/Common.csproj",
       "projectName": "Common",
-      "projectPath": "/home/jenda/Ukolnicek/src/Common/Common.csproj",
-      "packagesPath": "/home/jenda/.nuget/packages/",
-      "outputPath": "/home/jenda/Ukolnicek/src/Common/obj/",
+      "projectPath": "/home/jan/Ukolnicek/src/Common/Common.csproj",
+      "packagesPath": "/home/jan/.nuget/packages/",
+      "outputPath": "/home/jan/Ukolnicek/src/Common/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/jenda/.nuget/NuGet/NuGet.Config"
+        "/home/jan/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net7.0"
@@ -112,7 +112,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/7.0.109/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/7.0.110/RuntimeIdentifierGraph.json"
       }
     }
   }

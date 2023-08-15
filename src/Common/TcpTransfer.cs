@@ -71,7 +71,7 @@ public class JsonTcpTransfer : IObjectTransfer{
 
 		var item = JsonConvert.DeserializeObject(json, settings);
 		if( item is T t ) return t;
-		throw new InvalidCastException($"Cannot cast {item.GetType()} to {typeof(T)}");
+		throw new InvalidCastException($"Cannot cast {item?.GetType()} to {typeof(T)}");
 	}
 
 	public void Dispose(){
