@@ -185,7 +185,7 @@ public class ConsoleUI : IUserInterface {
 			return;
 		}
 
-		for(int i=1; i < assignment.Length; i++){
+		for(int i=0; i < assignment.Length; i++){
 			Console.WriteLine(ExtractName(assignment[i])); // TODO display basic info about solution
 		}
 	}
